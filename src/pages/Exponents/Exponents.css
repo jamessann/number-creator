@@ -1,0 +1,172 @@
+.exponents__step {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 28px 0 14px;
+}
+
+.exponents__hint {
+  color: var(--color-text-muted);
+}
+
+.exponents__numbers,
+.exponents__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 18px;
+}
+
+.exponents__create {
+  border: 3px dashed var(--color-border);
+  background: transparent;
+  border-radius: 22px;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--color-text-muted);
+  font-weight: 800;
+  font-size: 1.05rem;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.exponents__create:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.exponents__create-plus {
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+/* Result card */
+.exponents__result-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  border-radius: 24px;
+  padding: 28px;
+  color: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.exponents__result-glyph {
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+}
+
+.exponents__result-glyph .number-card__ink {
+  fill: #fff;
+}
+
+.exponents__result-eq {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.exponents__result-desc {
+  font-size: 1.1rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Dialog */
+.dialog__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+}
+
+.dialog__content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(480px, 92vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: var(--shadow-md);
+  z-index: 51;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dialog__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.dialog__desc {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.dialog__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dialog__example {
+  background: var(--color-surface-2);
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Radix slider */
+.slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  touch-action: none;
+}
+
+.slider__track {
+  background: var(--color-surface-2);
+  position: relative;
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.slider__range {
+  position: absolute;
+  background: var(--color-primary);
+  height: 100%;
+  border-radius: 999px;
+}
+
+.slider__thumb {
+  display: block;
+  width: 32px;
+  height: 32px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+}
+
+.slider__thumb:focus {
+  outline: 3px solid var(--color-accent);
+}

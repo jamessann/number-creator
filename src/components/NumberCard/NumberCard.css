@@ -1,0 +1,63 @@
+.number-card {
+  position: relative;
+}
+
+.number-card__btn {
+  width: 100%;
+  background: var(--color-surface);
+  border: 3px solid var(--color-border);
+  border-radius: 22px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.08s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.number-card__btn:active {
+  transform: scale(0.96);
+}
+
+.number-card--selected .number-card__btn {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary);
+}
+
+.number-card__glyph {
+  width: 100%;
+  height: 110px;
+}
+
+.number-card__ink {
+  fill: var(--color-ink);
+}
+
+.number-card__name {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--color-text);
+  text-align: center;
+}
+
+.number-card__value {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.number-card__delete {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-danger);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1rem;
+  box-shadow: var(--shadow-sm);
+}

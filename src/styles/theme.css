@@ -1,0 +1,36 @@
+/* Theme palettes driven by data-theme on <html>. */
+
+:root,
+:root[data-theme='light'] {
+  --color-bg: #f4f3fb;
+  --color-surface: #ffffff;
+  --color-surface-2: #efeefa;
+  --color-border: #e0def0;
+  --color-text: #1a1a2e;
+  --color-text-muted: #6b6a85;
+  --color-primary: #6c5ce7;
+  --color-primary-hover: #5a4bd4;
+  --color-primary-contrast: #ffffff;
+  --color-accent: #00b894;
+  --color-danger: #e74c5e;
+  --color-ink: #2d2d44; /* drawing ink */
+  --shadow-sm: 0 2px 8px rgba(40, 30, 90, 0.08);
+  --shadow-md: 0 8px 24px rgba(40, 30, 90, 0.12);
+}
+
+:root[data-theme='dark'] {
+  --color-bg: #14142b;
+  --color-surface: #1f1f3d;
+  --color-surface-2: #2a2a4f;
+  --color-border: #34345c;
+  --color-text: #f0f0fa;
+  --color-text-muted: #a6a6c8;
+  --color-primary: #8b7bff;
+  --color-primary-hover: #9d8fff;
+  --color-primary-contrast: #14142b;
+  --color-accent: #34e7b8;
+  --color-danger: #ff6b81;
+  --color-ink: #f0f0fa;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+}

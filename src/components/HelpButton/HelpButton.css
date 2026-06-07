@@ -1,0 +1,35 @@
+.help-button {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 3px solid var(--color-primary);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: 1.6rem;
+  font-weight: 800;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+
+.help-button:hover {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+.help-button:active {
+  transform: scale(0.92);
+}
+
+.help-button__tip {
+  background: var(--color-text);
+  color: var(--color-bg);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
+}
+
+.help-button__arrow {
+  fill: var(--color-text);
+}

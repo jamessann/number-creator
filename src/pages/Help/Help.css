@@ -1,0 +1,35 @@
+.help {
+  max-width: 720px;
+}
+
+.help__card {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 20px;
+  padding: 22px 26px;
+  margin-bottom: 16px;
+}
+
+.help__heading {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0 0 10px;
+  color: var(--color-primary);
+}
+
+.help__text {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.help__list {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.help__list li {
+  margin-bottom: 6px;
+}
