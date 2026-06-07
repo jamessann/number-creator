@@ -1,0 +1,111 @@
+.automations__step {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 28px 0 14px;
+}
+
+.automations__hint {
+  color: var(--color-text-muted);
+}
+
+.automations__numbers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 18px;
+}
+
+.automations__make {
+  border: 3px dashed var(--color-border);
+  background: transparent;
+  border-radius: 22px;
+  width: 100%;
+  max-width: 320px;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--color-text-muted);
+  font-weight: 800;
+  font-size: 1.05rem;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.automations__make:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.automations__make-plus {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.automations__select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 44px;
+}
+
+.automations__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.automation-card {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: #fff;
+  border-radius: 22px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow-md);
+}
+
+.automation-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.automation-card__name {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.automation-card__delete {
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-weight: 700;
+  min-height: 40px;
+}
+
+.automation-card__rule {
+  margin: 0 0 12px;
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+.automation-card__target {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.automation-card__value {
+  font-weight: 800;
+}
+
+.automation-card__next {
+  margin: 0;
+  font-weight: 700;
+  opacity: 0.9;
+}

@@ -43,6 +43,16 @@ export function Help() {
       </section>
 
       <section className="help__card">
+        <h2 className="help__heading">Automations 🤖</h2>
+        <p className="help__text">
+          Make a number grow <strong>all by itself!</strong> Go to <strong>Automations</strong>,
+          pick a number, and set a <strong>gain</strong> (like +2 tiers) and a{' '}
+          <strong>time</strong> (like every 10 seconds). It keeps climbing — even while you're
+          not watching. Come back later and it'll be way bigger!
+        </p>
+      </section>
+
+      <section className="help__card">
         <h2 className="help__heading">The mystery setting 💪</h2>
         <p className="help__text">
           Turn on <strong>Unlimited Strength</strong> in Settings to get a{' '}

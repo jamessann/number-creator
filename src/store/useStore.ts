@@ -1,12 +1,13 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { FictionalNumber, Exponent, CustomTier, Theme } from '../types'
-import { registerCustomTiers } from '../lib/bignum'
+import type { FictionalNumber, Exponent, CustomTier, Automation, Theme } from '../types'
+import { registerCustomTiers, tierOfValue, valueAtTier } from '../lib/bignum'
 
 interface State {
   numbers: FictionalNumber[]
   exponents: Exponent[]
   customTiers: CustomTier[]
+  automations: Automation[]
   theme: Theme
   unlimitedStrength: boolean
 
@@ -16,6 +17,10 @@ interface State {
   removeExponent: (id: string) => void
   addTier: (t: { name: string; short: string; desc: string; rank: number }) => CustomTier
   removeTier: (token: string) => void
+  addAutomation: (a: { name: string; gainTiers: number; intervalSecs: number; numberId: string }) => Automation
+  removeAutomation: (id: string) => void
+  /** Apply any due automation gains up to `now` (called on load + on a timer). */
+  runAutomations: (now: number) => void
   setTheme: (theme: Theme) => void
   setUnlimitedStrength: (on: boolean) => void
 }
@@ -26,10 +31,11 @@ function uid(): string {
 
 export const useStore = create<State>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       numbers: [],
       exponents: [],
       customTiers: [],
+      automations: [],
       theme: window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
       unlimitedStrength: false,
 
@@ -69,6 +75,40 @@ export const useStore = create<State>()(
           registerCustomTiers(customTiers)
           return { customTiers }
         }),
+
+      addAutomation: (a) => {
+        const created: Automation = {
+          ...a,
+          id: uid(),
+          lastTick: Date.now(),
+          createdAt: Date.now(),
+        }
+        set((s) => ({ automations: [created, ...s.automations] }))
+        return created
+      },
+      removeAutomation: (id) =>
+        set((s) => ({ automations: s.automations.filter((a) => a.id !== id) })),
+
+      runAutomations: (now) => {
+        const s = get()
+        if (!s.automations.length) return
+        const numbers = [...s.numbers]
+        let changed = false
+
+        const automations = s.automations.map((a) => {
+          const idx = numbers.findIndex((n) => n.id === a.numberId)
+          if (idx === -1) return a
+          const intervalMs = a.intervalSecs * 1000
+          const steps = Math.floor((now - a.lastTick) / intervalMs)
+          if (steps <= 0) return a
+          changed = true
+          const newTier = tierOfValue(numbers[idx].value) + a.gainTiers * steps
+          numbers[idx] = { ...numbers[idx], value: valueAtTier(newTier) }
+          return { ...a, lastTick: a.lastTick + steps * intervalMs }
+        })
+
+        if (changed) set({ numbers, automations })
+      },
 
       setTheme: (theme) => set({ theme }),
       setUnlimitedStrength: (unlimitedStrength) => set({ unlimitedStrength }),

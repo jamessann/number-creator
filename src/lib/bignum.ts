@@ -199,8 +199,25 @@ const POWER_NAMES: Record<number, string> = {
   303: 'a centillion',
 }
 
+const TIER_RE = /^TIERX_(\d+)$/
+
 export function isBoundless(v: string): boolean {
-  return v in registry
+  return v in registry || TIER_RE.test(String(v))
+}
+
+/** The current tier (ladder rank) of a value. Finite/huge numbers are tier 0. */
+export function tierOfValue(raw: string): number {
+  const v = String(raw)
+  if (v in registry) return registry[v].kind === 'infinite' ? registry[v].rank ?? 0 : 0
+  const m = TIER_RE.exec(v)
+  if (m) return Number(m[1])
+  return 0
+}
+
+/** The value token for a given tier: a named infinity if one exists there, else a generic tier. */
+export function valueAtTier(tier: number): string {
+  const named = getInfiniteLadder().find((t) => t.rank === tier)
+  return named ? named.token : `TIERX_${tier}`
 }
 
 /** Normalise a raw value string. Returns '' if it isn't usable. */
@@ -231,6 +248,12 @@ export function formatValue(raw: string): string {
   if (v in registry) {
     const b = registry[v]
     return b.kind === 'infinite' ? `${b.short} ${b.name}` : b.name
+  }
+  const tm = TIER_RE.exec(v)
+  if (tm) {
+    const tier = Number(tm[1])
+    const named = getInfiniteLadder().find((t) => t.rank === tier)
+    return named ? `${registry[named.token].short} ${registry[named.token].name}` : `⭐ Tier ${tier} Infinity`
   }
   if (/^\d+$/.test(v)) return digitsToFriendly(v)
 

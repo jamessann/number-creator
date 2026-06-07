@@ -21,6 +21,20 @@ export interface Exponent {
   createdAt: number
 }
 
+export interface Automation {
+  id: string
+  name: string
+  /** Tiers added each time it activates. */
+  gainTiers: number
+  /** Seconds between activations (0.5 → 86400). */
+  intervalSecs: number
+  /** The fictional number this automation grows. */
+  numberId: string
+  /** Timestamp of the last applied activation (ms). */
+  lastTick: number
+  createdAt: number
+}
+
 export interface CustomTier {
   token: string
   name: string
