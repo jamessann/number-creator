@@ -287,3 +287,36 @@ export function multiplyValue(raw: string, multiplier: number): MultiplyResult {
   const out = isFinite(r) ? String(BigInt(Math.round(r))) : 'INFINITY'
   return { value: out, display: formatValue(out), boundless: out === 'INFINITY' ? BOUNDLESS.INFINITY : null }
 }
+
+/**
+ * Upgrade any number straight to a chosen tier. If a named infinity already
+ * lives at that tier we use it; otherwise we mint a brand-new "Tier N Infinity".
+ */
+export function upgradeToTier(_raw: string, tier: number): MultiplyResult {
+  const named = getInfiniteLadder().find((t) => t.rank === tier)
+  if (named) {
+    const b = registry[named.token]
+    return {
+      value: b.token,
+      display: formatValue(b.token),
+      boundless: b,
+      note: `It got upgraded to ${b.short} ${b.name} — tier ${tier}! ${b.desc}`,
+    }
+  }
+  const synthetic: Boundless = {
+    token: `TIERX_${tier}`,
+    name: `Tier ${tier} Infinity`,
+    short: '⭐',
+    kind: 'infinite',
+    fictional: true,
+    custom: true,
+    rank: tier,
+    desc: '',
+  }
+  return {
+    value: synthetic.token,
+    display: `${synthetic.short} ${synthetic.name}`,
+    boundless: synthetic,
+    note: `It got upgraded to ⭐ Tier ${tier} Infinity — a brand-new level of infinity! 🌟`,
+  }
+}

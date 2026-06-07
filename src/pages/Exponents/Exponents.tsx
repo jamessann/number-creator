@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import * as Dialog from '@radix-ui/react-dialog'
-import * as Slider from '@radix-ui/react-slider'
 import { ExponentCard } from '../../components/ExponentCard/ExponentCard'
 import { NumberCard } from '../../components/NumberCard/NumberCard'
 import { useStore } from '../../store/useStore'
-import { formatValue, multiplyValue } from '../../lib/bignum'
+import { formatValue, upgradeToTier, getInfiniteLadder } from '../../lib/bignum'
 import './Exponents.css'
 
-function makeExample(multiplier: number): string {
-  const base = 2 + Math.floor(Math.random() * 7)
-  return `If you had ${base}, this exponent makes it ${base * multiplier}!`
+/** The tier an exponent targets (new exponents use targetTier; old ones used multiplier). */
+function tierOf(e: { targetTier?: number; multiplier?: number }): number {
+  return e.targetTier ?? e.multiplier ?? 1
+}
+
+function makeExample(tier: number): string {
+  return `Upgrades any number to ${upgradeToTier('1', tier).display}!`
 }
 
 export function Exponents() {
@@ -27,30 +30,36 @@ export function Exponents() {
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [expName, setExpName] = useState('')
-  const [expMultiplier, setExpMultiplier] = useState(2)
+  const [expTier, setExpTier] = useState('10')
   const [expExplanation, setExpExplanation] = useState('')
 
   const selectedNumber = numbers.find((n) => n.id === selectedNumberId) ?? null
   const selectedExp = exponents.find((e) => e.id === selectedExpId) ?? null
 
+  // Highest named tier, shown as a hint when typing a tier.
+  const ladder = getInfiniteLadder()
+  const topNamed = ladder[ladder.length - 1]
+
+  const tierNum = Math.max(1, Math.round(Number(expTier) || 1))
+
   const handleCreate = () => {
     if (!expName.trim()) return
     const created = addExponent({
       name: expName.trim(),
-      multiplier: expMultiplier,
-      explanation: expExplanation.trim() || `Makes numbers ${expMultiplier} times bigger!`,
-      example: makeExample(expMultiplier),
+      targetTier: tierNum,
+      explanation: expExplanation.trim() || `Upgrades any number to tier ${tierNum}!`,
+      example: makeExample(tierNum),
     })
     setSelectedExpId(created.id)
     setExpName('')
-    setExpMultiplier(2)
+    setExpTier('10')
     setExpExplanation('')
     setDialogOpen(false)
   }
 
   const result =
     selectedNumber && selectedExp
-      ? multiplyValue(selectedNumber.value, selectedExp.multiplier)
+      ? upgradeToTier(selectedNumber.value, tierOf(selectedExp))
       : null
 
   const scrollIntoView = (e: React.FocusEvent<HTMLElement>) => {
@@ -62,7 +71,7 @@ export function Exponents() {
     <div className="exponents">
       <h1 className="page__title">Exponent Library ⚡</h1>
       <p className="page__subtitle">
-        An exponent is a multiplier that makes your number much bigger!
+        An exponent upgrades your number to a tier you choose — type any tier number!
       </p>
 
       {/* Step 1: pick a number */}
@@ -110,7 +119,7 @@ export function Exponents() {
             <Dialog.Content className="dialog__content">
               <Dialog.Title className="dialog__title">Create your exponent ⚡</Dialog.Title>
               <Dialog.Description className="dialog__desc">
-                Give it a name and pick how much bigger it makes your numbers.
+                Give it a name and type which tier it upgrades your number to.
               </Dialog.Description>
 
               <label className="dialog__field">
@@ -125,20 +134,22 @@ export function Exponents() {
               </label>
 
               <label className="dialog__field">
-                <span className="home__label">Multiplier: ×{expMultiplier}</span>
-                <Slider.Root
-                  className="slider"
-                  min={2}
-                  max={100}
-                  step={1}
-                  value={[expMultiplier]}
-                  onValueChange={([v]) => setExpMultiplier(v)}
-                >
-                  <Slider.Track className="slider__track">
-                    <Slider.Range className="slider__range" />
-                  </Slider.Track>
-                  <Slider.Thumb className="slider__thumb" aria-label="Multiplier" />
-                </Slider.Root>
+                <span className="home__label">Upgrade to tier:</span>
+                <input
+                  className="home__input"
+                  type="text"
+                  inputMode="numeric"
+                  value={expTier}
+                  onChange={(e) => setExpTier(e.target.value.replace(/[^0-9]/g, ''))}
+                  onFocus={scrollIntoView}
+                  placeholder="type a tier number"
+                />
+                {topNamed && (
+                  <span className="exponents__tier-hint">
+                    Tip: {topNamed.short} {topNamed.name} is tier {topNamed.rank}. Type higher
+                    for a brand-new infinity!
+                  </span>
+                )}
               </label>
 
               <label className="dialog__field">
@@ -152,9 +163,7 @@ export function Exponents() {
                 />
               </label>
 
-              <p className="dialog__example">
-                Example: {makeExample(expMultiplier)}
-              </p>
+              <p className="dialog__example">Example: {makeExample(tierNum)}</p>
 
               <div className="dialog__actions">
                 <Dialog.Close asChild>
@@ -179,14 +188,12 @@ export function Exponents() {
             </svg>
             <div className="exponents__result-math">
               <p className="exponents__result-eq">
-                {formatValue(selectedNumber.value)} × {selectedExp.multiplier} ={' '}
+                {formatValue(selectedNumber.value)} → tier {tierOf(selectedExp)} ={' '}
                 <strong>{result.display}</strong>
               </p>
               <p className="exponents__result-desc">
                 Your <strong>{selectedNumber.name}</strong> got a{' '}
-                <strong>{selectedExp.name}</strong>!{' '}
-                {result.note ??
-                  `${selectedExp.explanation} It's now worth a whopping ${result.display}!`}
+                <strong>{selectedExp.name}</strong>! {result.note}
               </p>
             </div>
           </div>

@@ -8,6 +8,13 @@
   color: var(--color-text-muted);
 }
 
+.exponents__tier-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
 .exponents__numbers,
 .exponents__grid {
   display: grid;

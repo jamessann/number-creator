@@ -26,12 +26,13 @@
 }
 
 .exp-card__badge {
-  font-size: 1.8rem;
+  font-size: 1.3rem;
   font-weight: 800;
   color: var(--color-primary);
   background: var(--color-surface-2);
   border-radius: 14px;
   padding: 6px 18px;
+  white-space: nowrap;
 }
 
 .exp-card__name {

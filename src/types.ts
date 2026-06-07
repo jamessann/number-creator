@@ -12,7 +12,10 @@ export interface FictionalNumber {
 export interface Exponent {
   id: string
   name: string
-  multiplier: number
+  /** The tier this exponent upgrades a number to. */
+  targetTier: number
+  /** Legacy: old exponents stored a multiplier instead of a target tier. */
+  multiplier?: number
   explanation: string
   example: string
   createdAt: number

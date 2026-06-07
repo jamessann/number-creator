@@ -9,10 +9,11 @@ interface Props {
 }
 
 export function ExponentCard({ exponent, selected, onClick, onDelete }: Props) {
+  const tier = exponent.targetTier ?? exponent.multiplier ?? 1
   return (
     <div className={`exp-card${selected ? ' exp-card--selected' : ''}`}>
       <button className="exp-card__btn" onClick={onClick} aria-pressed={selected}>
-        <span className="exp-card__badge">×{exponent.multiplier}</span>
+        <span className="exp-card__badge">Tier {tier}</span>
         <span className="exp-card__name">{exponent.name}</span>
         <span className="exp-card__desc">{exponent.explanation}</span>
       </button>
