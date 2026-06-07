@@ -5,6 +5,7 @@ import * as Slider from '@radix-ui/react-slider'
 import { ExponentCard } from '../../components/ExponentCard/ExponentCard'
 import { NumberCard } from '../../components/NumberCard/NumberCard'
 import { useStore } from '../../store/useStore'
+import { formatValue, multiplyValue } from '../../lib/bignum'
 import './Exponents.css'
 
 function makeExample(multiplier: number): string {
@@ -49,8 +50,13 @@ export function Exponents() {
 
   const result =
     selectedNumber && selectedExp
-      ? selectedNumber.value * selectedExp.multiplier
+      ? multiplyValue(selectedNumber.value, selectedExp.multiplier)
       : null
+
+  const scrollIntoView = (e: React.FocusEvent<HTMLElement>) => {
+    const el = e.target
+    setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)
+  }
 
   return (
     <div className="exponents">
@@ -113,6 +119,7 @@ export function Exponents() {
                   className="home__input"
                   value={expName}
                   onChange={(e) => setExpName(e.target.value)}
+                  onFocus={scrollIntoView}
                   placeholder="e.g. Mega Boost"
                 />
               </label>
@@ -140,6 +147,7 @@ export function Exponents() {
                   className="home__input"
                   value={expExplanation}
                   onChange={(e) => setExpExplanation(e.target.value)}
+                  onFocus={scrollIntoView}
                   placeholder="What does it do?"
                 />
               </label>
@@ -171,13 +179,17 @@ export function Exponents() {
             </svg>
             <div className="exponents__result-math">
               <p className="exponents__result-eq">
-                {selectedNumber.value.toLocaleString()} × {selectedExp.multiplier} ={' '}
-                <strong>{result.toLocaleString()}</strong>
+                {formatValue(selectedNumber.value)} × {selectedExp.multiplier} ={' '}
+                <strong>{result.display}</strong>
               </p>
               <p className="exponents__result-desc">
                 Your <strong>{selectedNumber.name}</strong> got a{' '}
-                <strong>{selectedExp.name}</strong>! {selectedExp.explanation} It's now worth a
-                whopping {result.toLocaleString()}!
+                <strong>{selectedExp.name}</strong>!{' '}
+                {result.boundless?.kind === 'infinite'
+                  ? `${result.boundless.short} times anything is still ${result.boundless.short} — but let's say it's EVEN bigger! 🌌`
+                  : result.boundless?.kind === 'huge'
+                    ? `It was already too big to write down... now it's even more unimaginable! 🤯`
+                    : `${selectedExp.explanation} It's now worth a whopping ${result.display}!`}
               </p>
             </div>
           </div>

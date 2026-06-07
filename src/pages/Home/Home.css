@@ -38,6 +38,9 @@
   border-radius: 24px;
   padding: 24px;
   overflow-y: auto;
+  /* Room to scroll the focused field clear of the iPad keyboard. */
+  padding-bottom: 50vh;
+  scroll-padding-bottom: 50vh;
 }
 
 .home__field {
@@ -65,6 +68,43 @@
 .home__input:focus {
   outline: none;
   border-color: var(--color-primary);
+}
+
+.home__picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.home__pick {
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  min-height: 40px;
+  transition: transform 0.08s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.home__pick:active {
+  transform: scale(0.95);
+}
+
+.home__pick--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+.home__preview {
+  margin: 6px 0 0;
+  font-weight: 800;
+  color: var(--color-primary);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .home__error {

@@ -4,6 +4,7 @@ import * as Toast from '@radix-ui/react-toast'
 import { DrawingPad, type DrawingPadHandle } from '../../components/DrawingPad/DrawingPad'
 import { HelpButton } from '../../components/HelpButton/HelpButton'
 import { useStore } from '../../store/useStore'
+import { LEGENDARY_PICKS, formatValue, normaliseValue, isBoundless } from '../../lib/bignum'
 import './Home.css'
 
 export function Home() {
@@ -13,9 +14,15 @@ export function Home() {
 
   const [name, setName] = useState('')
   const [englishContext, setEnglishContext] = useState('')
-  const [value, setValue] = useState('')
+  const [worth, setWorth] = useState('')
   const [error, setError] = useState('')
   const [toastOpen, setToastOpen] = useState(false)
+
+  // Keep the focused field visible above the iPad keyboard.
+  const scrollIntoView = (e: React.FocusEvent<HTMLElement>) => {
+    const el = e.target
+    setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)
+  }
 
   const handleSave = () => {
     const result = padRef.current?.getResult()
@@ -27,10 +34,11 @@ export function Home() {
       setError('Give your number a name or describe it!')
       return
     }
+    const normalised = normaliseValue(worth)
     addNumber({
       name: name.trim() || englishContext.trim(),
       englishContext: englishContext.trim(),
-      value: Number(value) || Math.floor(100 + Math.random() * 9900),
+      value: normalised || String(Math.floor(100 + Math.random() * 9900)),
       svgPath: result.svgPath,
       viewBox: result.viewBox,
     })
@@ -39,7 +47,7 @@ export function Home() {
     padRef.current?.clear()
     setName('')
     setEnglishContext('')
-    setValue('')
+    setWorth('')
   }
 
   return (
@@ -66,6 +74,7 @@ export function Home() {
               className="home__input"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onFocus={scrollIntoView}
               placeholder="e.g. Squiggleplex"
             />
           </label>
@@ -76,21 +85,36 @@ export function Home() {
               className="home__input"
               value={englishContext}
               onChange={(e) => setEnglishContext(e.target.value)}
+              onFocus={scrollIntoView}
               placeholder="e.g. seven and a half"
             />
           </label>
 
-          <label className="home__field">
+          <div className="home__field">
             <span className="home__label">How much is it worth?</span>
             <input
               className="home__input"
-              type="number"
+              type="text"
               inputMode="numeric"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="pick a number (or we'll surprise you)"
+              value={isBoundless(worth) ? '' : worth}
+              onChange={(e) => setWorth(normaliseValue(e.target.value))}
+              onFocus={scrollIntoView}
+              placeholder="type a number, or pick a big one below"
             />
-          </label>
+            <div className="home__picks">
+              {LEGENDARY_PICKS.map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  className={`home__pick${worth === p.value ? ' home__pick--active' : ''}`}
+                  onClick={() => setWorth(p.value)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            {worth && <p className="home__preview">= {formatValue(worth)}</p>}
+          </div>
 
           {error && <p className="home__error">{error}</p>}
 

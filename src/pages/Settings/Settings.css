@@ -95,6 +95,17 @@
   margin: 16px 0;
 }
 
+.settings__free-card > div {
+  min-width: 0;
+}
+
+.settings__free-name,
+.settings__free-desc,
+.settings__free-value {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .settings__free-glyph {
   width: 120px;
   height: 120px;

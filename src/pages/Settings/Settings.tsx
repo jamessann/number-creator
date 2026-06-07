@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import * as Switch from '@radix-ui/react-switch'
 import { useStore } from '../../store/useStore'
 import { generateGlyph, generateDefinition } from '../../lib/generator'
+import { formatValue } from '../../lib/bignum'
 import './Settings.css'
 
 interface FreeNumber {
@@ -10,7 +11,7 @@ interface FreeNumber {
   viewBox: string
   name: string
   englishContext: string
-  value: number
+  value: string
   explanation: string
 }
 
@@ -93,7 +94,7 @@ export function SettingsPage() {
               <div>
                 <p className="settings__free-name">{free.name}</p>
                 <p className="settings__free-desc">{free.explanation}</p>
-                <p className="settings__free-value">Worth {free.value.toLocaleString()}</p>
+                <p className="settings__free-value">Worth {formatValue(free.value)}</p>
               </div>
             </div>
           )}

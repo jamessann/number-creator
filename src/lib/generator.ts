@@ -58,17 +58,23 @@ export function generateGlyph(): { svgPath: string; viewBox: string } {
   }
 }
 
+import { LEGENDARY_PICKS } from './bignum'
+
 /** Build a playful name + definition for a free fictional number. */
 export function generateDefinition(): {
   name: string
   englishContext: string
-  value: number
+  value: string
   explanation: string
 } {
   const adj = pick(ADJECTIVES)
   const noun = pick(NOUNS)
   const name = `${adj.charAt(0).toUpperCase() + adj.slice(1)} ${noun.charAt(0).toUpperCase() + noun.slice(1)}`
-  const value = Math.floor(10 ** (2 + Math.random() * 6))
+  // 1 in 3 free numbers is worth a legendary/boundless amount for extra wow.
+  const value =
+    Math.random() < 0.33
+      ? pick(LEGENDARY_PICKS).value
+      : String(Math.floor(10 ** (2 + Math.random() * 6)))
   return {
     name,
     englishContext: noun,

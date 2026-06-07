@@ -53,6 +53,11 @@
   box-shadow: var(--shadow-md);
 }
 
+.exponents__result-math {
+  min-width: 0;
+  flex: 1;
+}
+
 .exponents__result-glyph {
   width: 140px;
   height: 140px;
@@ -69,12 +74,16 @@
   font-size: 1.8rem;
   font-weight: 800;
   margin: 0 0 8px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .exponents__result-desc {
   font-size: 1.1rem;
   margin: 0;
   line-height: 1.4;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* Dialog */
@@ -87,15 +96,17 @@
 
 .dialog__content {
   position: fixed;
-  top: 50%;
+  top: max(16px, env(safe-area-inset-top));
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   width: min(480px, 92vw);
-  max-height: 90vh;
+  max-height: 85vh;
   overflow-y: auto;
   background: var(--color-surface);
   border-radius: 24px;
   padding: 28px;
+  /* Room to scroll a focused field clear of the iPad keyboard. */
+  padding-bottom: 40vh;
   box-shadow: var(--shadow-md);
   z-index: 51;
   display: flex;

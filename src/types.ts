@@ -2,7 +2,8 @@ export interface FictionalNumber {
   id: string
   name: string
   englishContext: string
-  value: number
+  /** Either a decimal digit string (any size) or a boundless token — see lib/bignum. */
+  value: string
   svgPath: string
   viewBox: string
   createdAt: number

@@ -1,4 +1,5 @@
 import type { FictionalNumber } from '../../types'
+import { formatValue } from '../../lib/bignum'
 import './NumberCard.css'
 
 interface Props {
@@ -17,7 +18,7 @@ export function NumberCard({ number, selected, onClick, onDelete }: Props) {
           <path d={number.svgPath} className="number-card__ink" />
         </svg>
         <span className="number-card__name">{number.name || number.englishContext}</span>
-        <span className="number-card__value">worth {number.value.toLocaleString()}</span>
+        <span className="number-card__value">worth {formatValue(number.value)}</span>
       </button>
       {onDelete && (
         <button
