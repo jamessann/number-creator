@@ -185,11 +185,8 @@ export function Exponents() {
               <p className="exponents__result-desc">
                 Your <strong>{selectedNumber.name}</strong> got a{' '}
                 <strong>{selectedExp.name}</strong>!{' '}
-                {result.boundless?.kind === 'infinite'
-                  ? `${result.boundless.short} times anything is still ${result.boundless.short} — but let's say it's EVEN bigger! 🌌`
-                  : result.boundless?.kind === 'huge'
-                    ? `It was already too big to write down... now it's even more unimaginable! 🤯`
-                    : `${selectedExp.explanation} It's now worth a whopping ${result.display}!`}
+                {result.note ??
+                  `${selectedExp.explanation} It's now worth a whopping ${result.display}!`}
               </p>
             </div>
           </div>

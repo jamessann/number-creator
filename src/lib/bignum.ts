@@ -12,6 +12,10 @@ export type Boundless = {
   short: string
   kind: 'huge' | 'infinite'
   desc: string
+  /** Position on the infinite ladder (higher = bigger). Only for kind 'infinite'. */
+  rank?: number
+  /** True for tiers beyond real maths — pure imagination. */
+  fictional?: boolean
 }
 
 export const BOUNDLESS: Record<string, Boundless> = {
@@ -34,6 +38,7 @@ export const BOUNDLESS: Record<string, Boundless> = {
     name: 'Infinity',
     short: '∞',
     kind: 'infinite',
+    rank: 1,
     desc: 'Bigger than every number. It never, ever ends.',
   },
   ALEPH_NULL: {
@@ -41,6 +46,7 @@ export const BOUNDLESS: Record<string, Boundless> = {
     name: 'Aleph-null',
     short: 'ℵ₀',
     kind: 'infinite',
+    rank: 2,
     desc: 'The smallest infinity — it counts all the whole numbers.',
   },
   ALEPH_ONE: {
@@ -48,6 +54,7 @@ export const BOUNDLESS: Record<string, Boundless> = {
     name: 'Aleph-one',
     short: 'ℵ₁',
     kind: 'infinite',
+    rank: 3,
     desc: 'An even BIGGER infinity than aleph-null!',
   },
   ABSOLUTE: {
@@ -55,9 +62,53 @@ export const BOUNDLESS: Record<string, Boundless> = {
     name: 'Absolute Infinity',
     short: 'Ω',
     kind: 'infinite',
-    desc: 'The infinity beyond all infinities. Nothing is bigger.',
+    rank: 4,
+    desc: 'The biggest infinity in real maths. Past here, it is all imagination!',
+  },
+  // --- Beyond real maths: pure fictional imagination ---
+  BEYOND: {
+    token: 'BEYOND',
+    name: 'Beyond Infinity',
+    short: 'Ω⁺',
+    kind: 'infinite',
+    rank: 5,
+    fictional: true,
+    desc: 'One step past the biggest real infinity. You are in imagination now!',
+  },
+  HYPER: {
+    token: 'HYPER',
+    name: 'Hyper Infinity',
+    short: 'Ω²',
+    kind: 'infinite',
+    rank: 6,
+    fictional: true,
+    desc: 'Infinity stacked on infinity. Whoa.',
+  },
+  COSMIC: {
+    token: 'COSMIC',
+    name: 'Cosmic Infinity',
+    short: 'Ω∞',
+    kind: 'infinite',
+    rank: 7,
+    fictional: true,
+    desc: 'So big it would fill every universe... twice.',
+  },
+  HOOPER: {
+    token: 'HOOPER',
+    name: "Hooper's Infinity",
+    short: '✦',
+    kind: 'infinite',
+    rank: 8,
+    fictional: true,
+    desc: 'The biggest number anyone has ever imagined. Nothing beats it. 👑',
   },
 }
+
+// Infinite tiers in ascending size order (built from rank).
+export const INFINITE_LADDER: string[] = Object.values(BOUNDLESS)
+  .filter((b) => b.kind === 'infinite')
+  .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+  .map((b) => b.token)
 
 // Quick-pick chips for the "how much is it worth?" picker.
 export interface LegendaryPick {
@@ -81,6 +132,10 @@ export const LEGENDARY_PICKS: LegendaryPick[] = [
   { label: 'ℵ₀ Aleph-null', value: 'ALEPH_NULL' },
   { label: 'ℵ₁ Aleph-one', value: 'ALEPH_ONE' },
   { label: 'Ω Absolute ∞', value: 'ABSOLUTE' },
+  { label: 'Ω⁺ Beyond ∞', value: 'BEYOND' },
+  { label: 'Ω² Hyper ∞', value: 'HYPER' },
+  { label: 'Ω∞ Cosmic ∞', value: 'COSMIC' },
+  { label: "✦ Hooper's ∞", value: 'HOOPER' },
 ]
 
 // Known powers of ten that have a fun name.
@@ -141,6 +196,8 @@ export interface MultiplyResult {
   value: string // resulting value (digit string or boundless token)
   display: string // friendly formatted result
   boundless: Boundless | null
+  /** Playful sentence for boundless results (level-ups, top-of-ladder, etc.). */
+  note?: string
 }
 
 /** Multiply a value by a (small) whole multiplier. */
@@ -148,7 +205,28 @@ export function multiplyValue(raw: string, multiplier: number): MultiplyResult {
   const v = String(raw)
   if (v in BOUNDLESS) {
     const b = BOUNDLESS[v]
-    return { value: v, display: formatValue(v), boundless: b }
+
+    // Infinite numbers can't get "more multiplied" — instead they level UP
+    // the imaginary ladder, so an exponent really does make them bigger.
+    if (b.kind === 'infinite') {
+      const idx = INFINITE_LADDER.indexOf(b.token)
+      const steps = multiplier >= 50 ? 3 : multiplier >= 10 ? 2 : 1
+      const targetIdx = Math.min(idx + steps, INFINITE_LADDER.length - 1)
+      const next = BOUNDLESS[INFINITE_LADDER[targetIdx]]
+      const note =
+        targetIdx > idx
+          ? `It leveled up to ${next.short} ${next.name}! ${next.desc}`
+          : `${b.short} ${b.name} is the biggest number anyone has ever imagined — nothing can beat it! 👑`
+      return { value: next.token, display: formatValue(next.token), boundless: next, note }
+    }
+
+    // Huge-but-finite numbers stay huge.
+    return {
+      value: v,
+      display: formatValue(v),
+      boundless: b,
+      note: "It was already too big to write down... now it's even more unimaginable! 🤯",
+    }
   }
   if (/^\d+$/.test(v)) {
     const r = (BigInt(v) * BigInt(Math.round(multiplier))).toString()

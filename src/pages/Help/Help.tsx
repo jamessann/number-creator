@@ -30,6 +30,11 @@ export function Help() {
           An exponent is a <strong>multiplier</strong> that makes your fictional number much
           bigger. Pick a number, pick an exponent, and watch it grow!
         </p>
+        <p className="help__text">
+          ✨ <strong>Secret:</strong> put an exponent on an infinity (like Absolute Infinity)
+          and it <strong>levels up</strong> into something even bigger — all the way past real
+          maths and into pure imagination!
+        </p>
       </section>
 
       <section className="help__card">
