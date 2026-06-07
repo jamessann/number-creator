@@ -23,6 +23,8 @@ export interface CustomTier {
   name: string
   short: string
   desc: string
+  /** Chosen position on the infinite ladder (higher = bigger). */
+  rank: number
   createdAt: number
 }
 

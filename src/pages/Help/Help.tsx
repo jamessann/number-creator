@@ -35,6 +35,11 @@ export function Help() {
           and it <strong>levels up</strong> into something even bigger — all the way past real
           maths and into pure imagination!
         </p>
+        <p className="help__text">
+          🌀 <strong>Make your own infinity!</strong> On the Create page tap{' '}
+          <strong>➕ New infinity</strong>, give it a name and symbol, and choose exactly
+          where it goes on the ladder — the new biggest of all, or anywhere in between.
+        </p>
       </section>
 
       <section className="help__card">

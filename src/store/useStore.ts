@@ -14,7 +14,7 @@ interface State {
   removeNumber: (id: string) => void
   addExponent: (e: Omit<Exponent, 'id' | 'createdAt'>) => Exponent
   removeExponent: (id: string) => void
-  addTier: (t: { name: string; short: string; desc: string }) => CustomTier
+  addTier: (t: { name: string; short: string; desc: string; rank: number }) => CustomTier
   removeTier: (token: string) => void
   setTheme: (theme: Theme) => void
   setUnlimitedStrength: (on: boolean) => void
@@ -53,6 +53,7 @@ export const useStore = create<State>()(
           name: t.name,
           short: t.short,
           desc: t.desc,
+          rank: t.rank,
           createdAt: Date.now(),
         }
         set((s) => {

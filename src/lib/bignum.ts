@@ -121,14 +121,15 @@ function buildLadder(map: Record<string, Boundless>): string[] {
 }
 
 /**
- * Plug user-created tiers into the ladder. Each custom tier sits ABOVE every
- * built-in (and earlier custom) tier, in creation order — so the newest one a
- * user invents becomes the biggest number of all.
+ * Plug user-created tiers into the ladder. Each tier sits at the rank the user
+ * chose, so they can place a new infinity anywhere — top, bottom, or between
+ * two existing ones.
  */
-export function registerCustomTiers(tiers: Array<{ token: string; name: string; short: string; desc: string; createdAt: number }>): void {
+export function registerCustomTiers(
+  tiers: Array<{ token: string; name: string; short: string; desc: string; rank: number }>
+): void {
   const next: Record<string, Boundless> = { ...BOUNDLESS }
-  const ordered = [...tiers].sort((a, b) => a.createdAt - b.createdAt)
-  ordered.forEach((t, i) => {
+  tiers.forEach((t) => {
     next[t.token] = {
       token: t.token,
       name: t.name,
@@ -136,12 +137,20 @@ export function registerCustomTiers(tiers: Array<{ token: string; name: string; 
       kind: 'infinite',
       fictional: true,
       custom: true,
-      rank: 100 + i, // always above the built-in ladder (max rank 8)
+      rank: t.rank,
       desc: t.desc,
     }
   })
   registry = next
   infiniteLadder = buildLadder(next)
+}
+
+/** The current infinite ladder, smallest → biggest, for building position pickers. */
+export function getInfiniteLadder(): Array<{ token: string; name: string; short: string; rank: number }> {
+  return infiniteLadder.map((token) => {
+    const b = registry[token]
+    return { token, name: b.name, short: b.short, rank: b.rank ?? 0 }
+  })
 }
 
 /** Quick-pick chips for any custom tiers (for the worth picker). */

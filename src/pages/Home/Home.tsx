@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as Toast from '@radix-ui/react-toast'
 import * as Dialog from '@radix-ui/react-dialog'
@@ -8,11 +8,37 @@ import { useStore } from '../../store/useStore'
 import {
   LEGENDARY_PICKS,
   customTierChips,
+  getInfiniteLadder,
   formatValue,
   normaliseValue,
   isBoundless,
 } from '../../lib/bignum'
 import './Home.css'
+
+interface TierSlot {
+  label: string
+  rank: number
+}
+
+/** Build the choices for "where does this new infinity go?" (biggest first). */
+function buildTierSlots(): TierSlot[] {
+  const ladder = getInfiniteLadder() // ascending (smallest → biggest)
+  if (!ladder.length) return [{ label: '👑 The new BIGGEST of all!', rank: 1 }]
+  const desc = [...ladder].reverse() // biggest first
+  const slots: TierSlot[] = [
+    { label: '👑 The new BIGGEST of all!', rank: desc[0].rank + 1 },
+  ]
+  for (let i = 0; i < desc.length - 1; i++) {
+    const upper = desc[i]
+    const lower = desc[i + 1]
+    slots.push({
+      label: `Between ${upper.short} ${upper.name} and ${lower.short} ${lower.name}`,
+      rank: (upper.rank + lower.rank) / 2,
+    })
+  }
+  slots.push({ label: '🐣 The new smallest infinity', rank: ladder[0].rank - 1 })
+  return slots
+}
 
 export function Home() {
   const padRef = useRef<DrawingPadHandle>(null)
@@ -33,18 +59,25 @@ export function Home() {
   const [tierName, setTierName] = useState('')
   const [tierShort, setTierShort] = useState('')
   const [tierDesc, setTierDesc] = useState('')
+  const [tierRank, setTierRank] = useState<number | null>(null)
+
+  // Recomputed whenever the dialog opens or the tier list changes.
+  const tierSlots = useMemo(() => buildTierSlots(), [customTiers, tierOpen])
+  const effectiveRank = tierRank ?? tierSlots[0].rank
 
   const handleCreateTier = () => {
     if (!tierName.trim()) return
     const tier = addTier({
       name: tierName.trim(),
       short: tierShort.trim() || '✦',
-      desc: tierDesc.trim() || `${tierName.trim()} — the new biggest number ever!`,
+      desc: tierDesc.trim() || `${tierName.trim()} — a brand-new infinity!`,
+      rank: effectiveRank,
     })
     setWorth(tier.token)
     setTierName('')
     setTierShort('')
     setTierDesc('')
+    setTierRank(null)
     setTierOpen(false)
   }
 
@@ -161,14 +194,20 @@ export function Home() {
         </aside>
       </div>
 
-      <Dialog.Root open={tierOpen} onOpenChange={setTierOpen}>
+      <Dialog.Root
+        open={tierOpen}
+        onOpenChange={(open) => {
+          if (open) setTierRank(null)
+          setTierOpen(open)
+        }}
+      >
         <Dialog.Portal>
           <Dialog.Overlay className="dialog__overlay" />
           <Dialog.Content className="dialog__content">
             <Dialog.Title className="dialog__title">Make your own infinity! ✦</Dialog.Title>
             <Dialog.Description className="dialog__desc">
-              Invent a brand-new tier. It becomes the BIGGEST number of all — even
-              bigger than Hooper's Infinity!
+              Invent a brand-new infinity and choose exactly where it sits on the
+              ladder — the new biggest of all, or anywhere in between!
             </Dialog.Description>
 
             <label className="dialog__field">
@@ -203,6 +242,21 @@ export function Home() {
                 onFocus={scrollIntoView}
                 placeholder="Describe it!"
               />
+            </label>
+
+            <label className="dialog__field">
+              <span className="home__label">Which tier? Where does it go?</span>
+              <select
+                className="home__input home__select"
+                value={String(effectiveRank)}
+                onChange={(e) => setTierRank(parseFloat(e.target.value))}
+              >
+                {tierSlots.map((slot) => (
+                  <option key={slot.rank} value={String(slot.rank)}>
+                    {slot.label}
+                  </option>
+                ))}
+              </select>
             </label>
 
             {tierName.trim() && (
