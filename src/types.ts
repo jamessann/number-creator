@@ -18,6 +18,14 @@ export interface Exponent {
   createdAt: number
 }
 
+export interface CustomTier {
+  token: string
+  name: string
+  short: string
+  desc: string
+  createdAt: number
+}
+
 export type Theme = 'light' | 'dark'
 
 export interface Settings {

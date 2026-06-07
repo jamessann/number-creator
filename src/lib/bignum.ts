@@ -16,6 +16,8 @@ export type Boundless = {
   rank?: number
   /** True for tiers beyond real maths — pure imagination. */
   fictional?: boolean
+  /** True for user-created tiers. */
+  custom?: boolean
 }
 
 export const BOUNDLESS: Record<string, Boundless> = {
@@ -104,11 +106,50 @@ export const BOUNDLESS: Record<string, Boundless> = {
   },
 }
 
-// Infinite tiers in ascending size order (built from rank).
-export const INFINITE_LADDER: string[] = Object.values(BOUNDLESS)
-  .filter((b) => b.kind === 'infinite')
-  .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
-  .map((b) => b.token)
+// --- Dynamic registry: built-ins plus user-created custom tiers ---
+
+// The live set of boundless numbers (built-ins + custom). Functions read this.
+let registry: Record<string, Boundless> = { ...BOUNDLESS }
+// Infinite tiers in ascending size order (rebuilt whenever custom tiers change).
+let infiniteLadder: string[] = buildLadder(registry)
+
+function buildLadder(map: Record<string, Boundless>): string[] {
+  return Object.values(map)
+    .filter((b) => b.kind === 'infinite')
+    .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+    .map((b) => b.token)
+}
+
+/**
+ * Plug user-created tiers into the ladder. Each custom tier sits ABOVE every
+ * built-in (and earlier custom) tier, in creation order — so the newest one a
+ * user invents becomes the biggest number of all.
+ */
+export function registerCustomTiers(tiers: Array<{ token: string; name: string; short: string; desc: string; createdAt: number }>): void {
+  const next: Record<string, Boundless> = { ...BOUNDLESS }
+  const ordered = [...tiers].sort((a, b) => a.createdAt - b.createdAt)
+  ordered.forEach((t, i) => {
+    next[t.token] = {
+      token: t.token,
+      name: t.name,
+      short: t.short,
+      kind: 'infinite',
+      fictional: true,
+      custom: true,
+      rank: 100 + i, // always above the built-in ladder (max rank 8)
+      desc: t.desc,
+    }
+  })
+  registry = next
+  infiniteLadder = buildLadder(next)
+}
+
+/** Quick-pick chips for any custom tiers (for the worth picker). */
+export function customTierChips(
+  tiers: Array<{ token: string; name: string; short: string }>
+): LegendaryPick[] {
+  return tiers.map((t) => ({ label: `${t.short} ${t.name}`, value: t.token }))
+}
 
 // Quick-pick chips for the "how much is it worth?" picker.
 export interface LegendaryPick {
@@ -150,13 +191,13 @@ const POWER_NAMES: Record<number, string> = {
 }
 
 export function isBoundless(v: string): boolean {
-  return v in BOUNDLESS
+  return v in registry
 }
 
 /** Normalise a raw value string. Returns '' if it isn't usable. */
 export function normaliseValue(raw: string): string {
   const v = String(raw)
-  if (v in BOUNDLESS) return v
+  if (v in registry) return v
   // strip commas/spaces, keep digits
   const digits = v.replace(/[^0-9]/g, '').replace(/^0+(?=\d)/, '')
   return digits
@@ -178,8 +219,8 @@ function digitsToFriendly(d: string): string {
 /** Friendly display string for any value. */
 export function formatValue(raw: string): string {
   const v = String(raw)
-  if (v in BOUNDLESS) {
-    const b = BOUNDLESS[v]
+  if (v in registry) {
+    const b = registry[v]
     return b.kind === 'infinite' ? `${b.short} ${b.name}` : b.name
   }
   if (/^\d+$/.test(v)) return digitsToFriendly(v)
@@ -203,16 +244,16 @@ export interface MultiplyResult {
 /** Multiply a value by a (small) whole multiplier. */
 export function multiplyValue(raw: string, multiplier: number): MultiplyResult {
   const v = String(raw)
-  if (v in BOUNDLESS) {
-    const b = BOUNDLESS[v]
+  if (v in registry) {
+    const b = registry[v]
 
     // Infinite numbers can't get "more multiplied" — instead they level UP
     // the imaginary ladder, so an exponent really does make them bigger.
     if (b.kind === 'infinite') {
-      const idx = INFINITE_LADDER.indexOf(b.token)
+      const idx = infiniteLadder.indexOf(b.token)
       const steps = multiplier >= 50 ? 3 : multiplier >= 10 ? 2 : 1
-      const targetIdx = Math.min(idx + steps, INFINITE_LADDER.length - 1)
-      const next = BOUNDLESS[INFINITE_LADDER[targetIdx]]
+      const targetIdx = Math.min(idx + steps, infiniteLadder.length - 1)
+      const next = registry[infiniteLadder[targetIdx]]
       const note =
         targetIdx > idx
           ? `It leveled up to ${next.short} ${next.name}! ${next.desc}`

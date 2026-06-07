@@ -1,15 +1,25 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as Toast from '@radix-ui/react-toast'
+import * as Dialog from '@radix-ui/react-dialog'
 import { DrawingPad, type DrawingPadHandle } from '../../components/DrawingPad/DrawingPad'
 import { HelpButton } from '../../components/HelpButton/HelpButton'
 import { useStore } from '../../store/useStore'
-import { LEGENDARY_PICKS, formatValue, normaliseValue, isBoundless } from '../../lib/bignum'
+import {
+  LEGENDARY_PICKS,
+  customTierChips,
+  formatValue,
+  normaliseValue,
+  isBoundless,
+} from '../../lib/bignum'
 import './Home.css'
 
 export function Home() {
   const padRef = useRef<DrawingPadHandle>(null)
   const addNumber = useStore((s) => s.addNumber)
+  const customTiers = useStore((s) => s.customTiers)
+  const addTier = useStore((s) => s.addTier)
+  const removeTier = useStore((s) => s.removeTier)
   const navigate = useNavigate()
 
   const [name, setName] = useState('')
@@ -17,6 +27,26 @@ export function Home() {
   const [worth, setWorth] = useState('')
   const [error, setError] = useState('')
   const [toastOpen, setToastOpen] = useState(false)
+
+  // "Make your own infinity tier" dialog state
+  const [tierOpen, setTierOpen] = useState(false)
+  const [tierName, setTierName] = useState('')
+  const [tierShort, setTierShort] = useState('')
+  const [tierDesc, setTierDesc] = useState('')
+
+  const handleCreateTier = () => {
+    if (!tierName.trim()) return
+    const tier = addTier({
+      name: tierName.trim(),
+      short: tierShort.trim() || '✦',
+      desc: tierDesc.trim() || `${tierName.trim()} — the new biggest number ever!`,
+    })
+    setWorth(tier.token)
+    setTierName('')
+    setTierShort('')
+    setTierDesc('')
+    setTierOpen(false)
+  }
 
   // Keep the focused field visible above the iPad keyboard.
   const scrollIntoView = (e: React.FocusEvent<HTMLElement>) => {
@@ -102,7 +132,7 @@ export function Home() {
               placeholder="type a number, or pick a big one below"
             />
             <div className="home__picks">
-              {LEGENDARY_PICKS.map((p) => (
+              {[...LEGENDARY_PICKS, ...customTierChips(customTiers)].map((p) => (
                 <button
                   key={p.value}
                   type="button"
@@ -112,6 +142,13 @@ export function Home() {
                   {p.label}
                 </button>
               ))}
+              <button
+                type="button"
+                className="home__pick home__pick--new"
+                onClick={() => setTierOpen(true)}
+              >
+                ➕ New infinity
+              </button>
             </div>
             {worth && <p className="home__preview">= {formatValue(worth)}</p>}
           </div>
@@ -123,6 +160,92 @@ export function Home() {
           </button>
         </aside>
       </div>
+
+      <Dialog.Root open={tierOpen} onOpenChange={setTierOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="dialog__overlay" />
+          <Dialog.Content className="dialog__content">
+            <Dialog.Title className="dialog__title">Make your own infinity! ✦</Dialog.Title>
+            <Dialog.Description className="dialog__desc">
+              Invent a brand-new tier. It becomes the BIGGEST number of all — even
+              bigger than Hooper's Infinity!
+            </Dialog.Description>
+
+            <label className="dialog__field">
+              <span className="home__label">Name</span>
+              <input
+                className="home__input"
+                value={tierName}
+                onChange={(e) => setTierName(e.target.value)}
+                onFocus={scrollIntoView}
+                placeholder="e.g. Mega Ultra Infinity"
+              />
+            </label>
+
+            <label className="dialog__field">
+              <span className="home__label">Symbol (optional)</span>
+              <input
+                className="home__input"
+                value={tierShort}
+                onChange={(e) => setTierShort(e.target.value)}
+                onFocus={scrollIntoView}
+                maxLength={4}
+                placeholder="e.g. ✦ or ∞∞"
+              />
+            </label>
+
+            <label className="dialog__field">
+              <span className="home__label">What makes it special? (optional)</span>
+              <input
+                className="home__input"
+                value={tierDesc}
+                onChange={(e) => setTierDesc(e.target.value)}
+                onFocus={scrollIntoView}
+                placeholder="Describe it!"
+              />
+            </label>
+
+            {tierName.trim() && (
+              <p className="home__preview">
+                = {tierShort.trim() || '✦'} {tierName.trim()}
+              </p>
+            )}
+
+            {customTiers.length > 0 && (
+              <div className="home__tier-list">
+                <span className="home__label">Your infinities</span>
+                {customTiers.map((t) => (
+                  <div key={t.token} className="home__tier-row">
+                    <span>
+                      {t.short} {t.name}
+                    </span>
+                    <button
+                      type="button"
+                      className="home__tier-delete"
+                      onClick={() => {
+                        if (worth === t.token) setWorth('')
+                        removeTier(t.token)
+                      }}
+                      aria-label={`Delete ${t.name}`}
+                    >
+                      🗑
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="dialog__actions">
+              <Dialog.Close asChild>
+                <button className="btn btn--ghost">Cancel</button>
+              </Dialog.Close>
+              <button className="btn btn--primary" onClick={handleCreateTier}>
+                Create
+              </button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       <Toast.Root className="toast" open={toastOpen} onOpenChange={setToastOpen} duration={4000}>
         <Toast.Title>This is your fictional number! 🎉</Toast.Title>
