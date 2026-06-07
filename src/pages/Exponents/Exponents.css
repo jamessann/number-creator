@@ -93,6 +93,19 @@
   word-break: break-word;
 }
 
+.exponents__apply {
+  margin-top: 14px;
+  background: #fff;
+  color: var(--color-primary);
+  align-self: flex-start;
+}
+
+.exponents__applied {
+  margin: 14px 0 0;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
 /* Dialog */
 .dialog__overlay {
   position: fixed;

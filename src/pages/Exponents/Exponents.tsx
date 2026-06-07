@@ -21,12 +21,14 @@ export function Exponents() {
   const exponents = useStore((s) => s.exponents)
   const addExponent = useStore((s) => s.addExponent)
   const removeExponent = useStore((s) => s.removeExponent)
+  const setNumberValue = useStore((s) => s.setNumberValue)
 
   const [params] = useSearchParams()
   const initialNumber = params.get('n')
 
   const [selectedNumberId, setSelectedNumberId] = useState<string | null>(initialNumber)
   const [selectedExpId, setSelectedExpId] = useState<string | null>(null)
+  const [applied, setApplied] = useState(false)
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [expName, setExpName] = useState('')
@@ -85,7 +87,10 @@ export function Exponents() {
               key={n.id}
               number={n}
               selected={n.id === selectedNumberId}
-              onClick={() => setSelectedNumberId(n.id)}
+              onClick={() => {
+                setSelectedNumberId(n.id)
+                setApplied(false)
+              }}
             />
           ))}
         </div>
@@ -99,7 +104,10 @@ export function Exponents() {
             key={e.id}
             exponent={e}
             selected={e.id === selectedExpId}
-            onClick={() => setSelectedExpId(e.id)}
+            onClick={() => {
+              setSelectedExpId(e.id)
+              setApplied(false)
+            }}
             onDelete={() => {
               removeExponent(e.id)
               if (selectedExpId === e.id) setSelectedExpId(null)
@@ -195,6 +203,21 @@ export function Exponents() {
                 Your <strong>{selectedNumber.name}</strong> got a{' '}
                 <strong>{selectedExp.name}</strong>! {result.note}
               </p>
+              {applied ? (
+                <p className="exponents__applied">
+                  ✅ Saved! {selectedNumber.name} is now {result.display}.
+                </p>
+              ) : (
+                <button
+                  className="btn exponents__apply"
+                  onClick={() => {
+                    setNumberValue(selectedNumber.id, result.value)
+                    setApplied(true)
+                  }}
+                >
+                  ⚡ Keep this upgrade!
+                </button>
+              )}
             </div>
           </div>
         </div>

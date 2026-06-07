@@ -13,6 +13,7 @@ interface State {
 
   addNumber: (n: Omit<FictionalNumber, 'id' | 'createdAt'>) => FictionalNumber
   removeNumber: (id: string) => void
+  setNumberValue: (id: string, value: string) => void
   addExponent: (e: Omit<Exponent, 'id' | 'createdAt'>) => Exponent
   removeExponent: (id: string) => void
   addTier: (t: { name: string; short: string; desc: string; rank: number }) => CustomTier
@@ -45,6 +46,10 @@ export const useStore = create<State>()(
         return created
       },
       removeNumber: (id) => set((s) => ({ numbers: s.numbers.filter((n) => n.id !== id) })),
+      setNumberValue: (id, value) =>
+        set((s) => ({
+          numbers: s.numbers.map((n) => (n.id === id ? { ...n, value } : n)),
+        })),
 
       addExponent: (e) => {
         const created: Exponent = { ...e, id: uid(), createdAt: Date.now() }
