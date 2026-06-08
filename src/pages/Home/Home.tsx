@@ -30,7 +30,7 @@ export function Home() {
   const addNumber = useStore((s) => s.addNumber)
   const recordNumberCreated = useStore((s) => s.recordNumberCreated)
   const customTiers = useStore((s) => s.customTiers)
-  const todaySeconds = useStore((s) => s.challenges.playSeconds)
+  const todaySeconds = useStore((s) => s.todayPlaySeconds)
   const totalSeconds = useStore((s) => s.totalPlaySeconds)
   const addTier = useStore((s) => s.addTier)
   const removeTier = useStore((s) => s.removeTier)

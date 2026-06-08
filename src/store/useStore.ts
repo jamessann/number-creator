@@ -7,6 +7,7 @@ import {
   dayIndexOf,
   progressFor,
   rollReward,
+  PERIOD_MS,
   type Difficulty,
   type Reward,
   type ProgressSnapshot,
@@ -27,7 +28,11 @@ interface State {
   jewels: number
   /** Total seconds spent in the app across all time. */
   totalPlaySeconds: number
-  /** How many times today's challenges have been reset (shifts the rotation). */
+  /** Seconds spent in the app this calendar day (for the Create page). */
+  todayPlaySeconds: number
+  /** Calendar day the todayPlaySeconds counter belongs to. */
+  calDay: string
+  /** How many times the current challenges have been reset (shifts the rotation). */
   challengeOffset: number
   theme: Theme
   unlimitedStrength: boolean
@@ -57,8 +62,14 @@ function uid(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
+// The challenge period key: which 10-hour window we're in (as a string).
 function dayKey(): string {
-  return new Date().toLocaleDateString('en-CA') // YYYY-MM-DD, local
+  return String(Math.floor(Date.now() / PERIOD_MS))
+}
+
+// Calendar day, used for the Create page's "today" playtime.
+function calDayKey(): string {
+  return new Date().toLocaleDateString('en-CA')
 }
 
 function freshChallenges(day: string): ChallengeState {
@@ -71,6 +82,7 @@ function freshChallenges(day: string): ChallengeState {
     automationsStarted: 0,
     customTiersMade: 0,
     claimed: { easy: false, medium: false, hard: false },
+    rewards: {},
   }
 }
 
@@ -131,6 +143,8 @@ export const useStore = create<State>()(
       maxTierLevel: 1,
       jewels: 0,
       totalPlaySeconds: 0,
+      todayPlaySeconds: 0,
+      calDay: calDayKey(),
       challengeOffset: 0,
       theme: window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
       unlimitedStrength: false,
@@ -217,9 +231,13 @@ export const useStore = create<State>()(
       tickChallenges: () => {
         set((s) => {
           const c = today(s.challenges)
+          const cal = calDayKey()
+          const todayPlaySeconds = s.calDay === cal ? (s.todayPlaySeconds || 0) + 1 : 1
           return {
             challenges: { ...c, playSeconds: c.playSeconds + 1 },
             totalPlaySeconds: (s.totalPlaySeconds || 0) + 1,
+            todayPlaySeconds,
+            calDay: cal,
           }
         })
       },
@@ -252,7 +270,11 @@ export const useStore = create<State>()(
         const reward = rollReward(d)
         set((state) => {
           const next: Partial<State> = {
-            challenges: { ...state.challenges, claimed: { ...state.challenges.claimed, [d]: true } },
+            challenges: {
+              ...state.challenges,
+              claimed: { ...state.challenges.claimed, [d]: true },
+              rewards: { ...state.challenges.rewards, [d]: reward.label },
+            },
           }
           if (reward.kind === 'autoSpeed') {
             next.automationSpeedBonus = (state.automationSpeedBonus || 0) + reward.amount
@@ -292,6 +314,7 @@ export const useStore = create<State>()(
               automationsStarted: 0,
               customTiersMade: 0,
               claimed: { easy: false, medium: false, hard: false },
+              rewards: {},
             },
           }
         })

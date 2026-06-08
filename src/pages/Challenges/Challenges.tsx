@@ -6,8 +6,9 @@ import {
   dayIndexOf,
   progressFor,
   CYCLE_LENGTH,
+  PERIOD_HOURS,
+  PERIOD_MS,
   type Difficulty,
-  type Reward,
   type ProgressSnapshot,
 } from '../../lib/challenges'
 import './Challenges.css'
@@ -15,6 +16,14 @@ import './Challenges.css'
 function formatTime(secs: number): string {
   const s = Math.floor(secs)
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
+
+function formatCountdown(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000))
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  if (h > 0) return `${h}h ${m}m`
+  return `${m}m ${s % 60}s`
 }
 
 export function Challenges() {
@@ -27,7 +36,7 @@ export function Challenges() {
   const challengeOffset = useStore((s) => s.challengeOffset)
   const resetChallenges = useStore((s) => s.resetChallenges)
 
-  const [won, setWon] = useState<Partial<Record<Difficulty, Reward>>>({})
+  const [banner, setBanner] = useState<string | null>(null)
 
   const snapshot: ProgressSnapshot = useMemo(() => {
     let maxTier = 0
@@ -50,26 +59,34 @@ export function Challenges() {
     }
   }, [numbers, maxTierLevel, challenges])
 
-  const dayIndex = dayIndexOf(challenges.day) + (challengeOffset || 0)
+  const periodIndex = dayIndexOf(challenges.day)
+  const dayIndex = periodIndex + (challengeOffset || 0)
   const todays = challengesForIndex(dayIndex)
-  const tomorrow = challengesForIndex(dayIndex + 1)
+  const upcoming = challengesForIndex(dayIndex + 1)
   const cycleDay = (((dayIndex % CYCLE_LENGTH) + CYCLE_LENGTH) % CYCLE_LENGTH) + 1
+  const msToRefresh = (periodIndex + 1) * PERIOD_MS - Date.now()
 
   const claim = (d: Difficulty) => {
     const reward = claimChallenge(d)
-    if (reward) setWon((w) => ({ ...w, [d]: reward }))
+    if (reward) {
+      setBanner(reward.label)
+      setTimeout(() => setBanner(null), 5000)
+    }
   }
 
   const reset = () => {
-    if (resetChallenges()) setWon({})
+    if (resetChallenges()) setBanner(null)
   }
 
   return (
     <div className="challenges">
-      <h1 className="page__title">Daily Challenges 🏆</h1>
+      <h1 className="page__title">Challenges 🏆</h1>
       <p className="page__subtitle">
-        New challenges every day! Day {cycleDay} of {CYCLE_LENGTH} — then the cycle repeats.
+        New challenges every {PERIOD_HOURS} hours — fresh ones in {formatCountdown(msToRefresh)}!
+        (Set {cycleDay} of {CYCLE_LENGTH})
       </p>
+
+      {banner && <div className="challenges__banner">🎉 You won: {banner}</div>}
 
       <div className="challenges__stats">
         <div className="challenges__stat">
@@ -100,6 +117,7 @@ export function Challenges() {
           const pct = Math.min(100, Math.round((progress / c.target) * 100))
           const done = progress >= c.target
           const claimed = challenges.claimed[c.id]
+          const wonLabel = challenges.rewards?.[c.id]
           const progressText =
             c.metric === 'play'
               ? `${formatTime(progress)} / ${formatTime(c.target)}`
@@ -120,8 +138,8 @@ export function Challenges() {
 
               {claimed ? (
                 <div className="challenge-card__claimed">
-                  ✅ Done today!
-                  {won[c.id] && <span className="challenge-card__won">{won[c.id]!.label}</span>}
+                  ✅ Reward collected!
+                  {wonLabel && <span className="challenge-card__won">🎁 {wonLabel}</span>}
                 </div>
               ) : done ? (
                 <button className="btn btn--primary challenge-card__claim" onClick={() => claim(c.id)}>
@@ -136,17 +154,17 @@ export function Challenges() {
       </div>
 
       <div className="challenges__tomorrow">
-        <h2 className="challenges__tomorrow-title">🔮 Tomorrow's challenges</h2>
+        <h2 className="challenges__tomorrow-title">🔮 Next challenges</h2>
         <ul className="challenges__tomorrow-list">
-          {tomorrow.map((c) => (
+          {upcoming.map((c) => (
             <li key={c.id}>
               {c.emoji} <strong>{c.title}:</strong> {c.goal}
             </li>
           ))}
         </ul>
         <p className="challenges__note">
-          See? Different every day — they only repeat after {CYCLE_LENGTH} days. Challenges and
-          progress reset each day.
+          Different every refresh — they only repeat after {CYCLE_LENGTH} sets. Challenges and
+          progress reset every {PERIOD_HOURS} hours.
         </p>
       </div>
     </div>

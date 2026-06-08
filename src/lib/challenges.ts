@@ -50,13 +50,17 @@ const HARD_POOL: Variant[] = [
   { goal: 'Create 30 numbers', target: 30, metric: 'create' },
 ]
 
-/** How many days the whole rotation lasts before it repeats. */
+/** How many periods the whole rotation lasts before it repeats. */
 export const CYCLE_LENGTH = EASY_POOL.length // 6
 
-/** Whole-days since the Unix epoch for a YYYY-MM-DD day key. */
+/** Challenges refresh on this cooldown. */
+export const PERIOD_HOURS = 10
+export const PERIOD_MS = PERIOD_HOURS * 60 * 60 * 1000
+
+/** The challenge period key is just the period index stored as a string. */
 export function dayIndexOf(day: string): number {
-  const ms = Date.parse(`${day}T00:00:00Z`)
-  return isNaN(ms) ? 0 : Math.floor(ms / 86400000)
+  const n = Number(day)
+  return Number.isFinite(n) ? n : 0
 }
 
 /** The three challenges for a given rotation index (cycles forever). */

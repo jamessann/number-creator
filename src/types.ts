@@ -63,6 +63,8 @@ export interface ChallengeState {
   /** Custom infinities made today. */
   customTiersMade: number
   claimed: { easy: boolean; medium: boolean; hard: boolean }
+  /** The reward label won for each claimed challenge (so it stays visible). */
+  rewards: { easy?: string; medium?: string; hard?: string }
 }
 
 export type Theme = 'light' | 'dark'

@@ -21,6 +21,29 @@
   color: var(--color-primary);
 }
 
+.challenges__banner {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.15rem;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-md);
+  animation: banner-pop 0.25s ease;
+}
+
+@keyframes banner-pop {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .challenges__reset {
   margin-bottom: 20px;
 }
