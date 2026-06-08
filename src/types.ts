@@ -47,6 +47,16 @@ export interface CustomTier {
   createdAt: number
 }
 
+export interface ChallengeState {
+  /** Local day key (YYYY-MM-DD) these counts belong to. */
+  day: string
+  /** Seconds spent in the app today. */
+  playSeconds: number
+  /** Detailed numbers created today. */
+  detailedCount: number
+  claimed: { easy: boolean; medium: boolean; hard: boolean }
+}
+
 export type Theme = 'light' | 'dark'
 
 export interface Settings {

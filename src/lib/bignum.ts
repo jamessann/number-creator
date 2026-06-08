@@ -200,24 +200,50 @@ const POWER_NAMES: Record<number, string> = {
 }
 
 const TIER_RE = /^TIERX_(\d+)$/
+// Tier LEVEL tokens: LV<level>_<tier>, e.g. LV2_9 = "tier tier 9" (level 2, tier 9).
+const LV_RE = /^LV(\d+)_(\d+)$/
 
 export function isBoundless(v: string): boolean {
-  return v in registry || TIER_RE.test(String(v))
+  const s = String(v)
+  return s in registry || TIER_RE.test(s) || LV_RE.test(s)
 }
 
-/** The current tier (ladder rank) of a value. Finite/huge numbers are tier 0. */
-export function tierOfValue(raw: string): number {
+/**
+ * Decompose a value into its tier LEVEL and tier.
+ *  - level 1 = a normal "tier N" (∞, ℵ₀, Ω, Tier N Infinity, …)
+ *  - level 2 = "tier tier N", level 3 = "tier tier tier N", …
+ * A higher level always beats any tier of a lower level.
+ */
+export function parseTier(raw: string): { level: number; tier: number } {
   const v = String(raw)
-  if (v in registry) return registry[v].kind === 'infinite' ? registry[v].rank ?? 0 : 0
+  const lv = LV_RE.exec(v)
+  if (lv) return { level: Number(lv[1]), tier: Number(lv[2]) }
+  if (v in registry) return { level: 1, tier: registry[v].kind === 'infinite' ? registry[v].rank ?? 0 : 0 }
   const m = TIER_RE.exec(v)
-  if (m) return Number(m[1])
-  return 0
+  if (m) return { level: 1, tier: Number(m[1]) }
+  return { level: 1, tier: 0 }
 }
 
-/** The value token for a given tier: a named infinity if one exists there, else a generic tier. */
+/** The current tier of a value. Finite/huge numbers are tier 0. */
+export function tierOfValue(raw: string): number {
+  return parseTier(raw).tier
+}
+
+/** The tier LEVEL of a value (1 = normal tier, 2 = "tier tier", …). */
+export function tierLevelOf(raw: string): number {
+  return parseTier(raw).level
+}
+
+/** A value token for a tier at level 1: a named infinity if one exists, else a generic tier. */
 export function valueAtTier(tier: number): string {
   const named = getInfiniteLadder().find((t) => t.rank === tier)
   return named ? named.token : `TIERX_${tier}`
+}
+
+/** A value token at a given tier LEVEL and tier. Level 1 uses the normal ladder. */
+export function makeTierValue(level: number, tier: number): string {
+  if (level <= 1) return valueAtTier(tier)
+  return `LV${level}_${tier}`
 }
 
 /** Normalise a raw value string. Returns '' if it isn't usable. */
@@ -248,6 +274,12 @@ export function formatValue(raw: string): string {
   if (v in registry) {
     const b = registry[v]
     return b.kind === 'infinite' ? `${b.short} ${b.name}` : b.name
+  }
+  const lv = LV_RE.exec(v)
+  if (lv) {
+    const level = Number(lv[1])
+    const tier = Number(lv[2])
+    return `⭐ ${'tier '.repeat(level)}${tier}`
   }
   const tm = TIER_RE.exec(v)
   if (tm) {

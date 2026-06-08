@@ -6,6 +6,7 @@ const LINKS = [
   { to: '/library', label: 'My Numbers', icon: '🔢' },
   { to: '/exponents', label: 'Exponents', icon: '⚡' },
   { to: '/automations', label: 'Automations', icon: '🤖' },
+  { to: '/challenges', label: 'Challenges', icon: '🏆' },
   { to: '/settings', label: 'Settings', icon: '⚙️' },
   { to: '/help', label: 'Help', icon: '❓' },
 ]

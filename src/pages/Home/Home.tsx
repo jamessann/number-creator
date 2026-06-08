@@ -18,6 +18,7 @@ import './Home.css'
 export function Home() {
   const padRef = useRef<DrawingPadHandle>(null)
   const addNumber = useStore((s) => s.addNumber)
+  const recordDetailedNumber = useStore((s) => s.recordDetailedNumber)
   const customTiers = useStore((s) => s.customTiers)
   const addTier = useStore((s) => s.addTier)
   const removeTier = useStore((s) => s.removeTier)
@@ -82,6 +83,9 @@ export function Home() {
       svgPath: result.svgPath,
       viewBox: result.viewBox,
     })
+    // Count toward the Hard daily challenge if it's a detailed number.
+    const detailed = result.svgPath.length > 300 && englishContext.trim().length >= 10
+    if (detailed) recordDetailedNumber()
     setError('')
     setToastOpen(true)
     padRef.current?.clear()

@@ -7,6 +7,7 @@ import { Home } from './pages/Home/Home'
 import { Library } from './pages/Library/Library'
 import { Exponents } from './pages/Exponents/Exponents'
 import { Automations } from './pages/Automations/Automations'
+import { Challenges } from './pages/Challenges/Challenges'
 import { SettingsPage } from './pages/Settings/Settings'
 import { Help } from './pages/Help/Help'
 import { useStore } from './store/useStore'
@@ -18,10 +19,13 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
-  // Drive automations: catch up on load, then tick every second while open.
+  // Drive automations + challenge timers: catch up on load, then tick every second.
   useEffect(() => {
-    const tick = () => useStore.getState().runAutomations(Date.now())
-    tick()
+    const tick = () => {
+      useStore.getState().runAutomations(Date.now())
+      useStore.getState().tickChallenges()
+    }
+    useStore.getState().runAutomations(Date.now())
     const id = window.setInterval(tick, 1000)
     return () => window.clearInterval(id)
   }, [])
@@ -38,6 +42,7 @@ export default function App() {
                 <Route path="/library" element={<Library />} />
                 <Route path="/exponents" element={<Exponents />} />
                 <Route path="/automations" element={<Automations />} />
+                <Route path="/challenges" element={<Challenges />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/help" element={<Help />} />
               </Routes>
