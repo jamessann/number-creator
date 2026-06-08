@@ -8,6 +8,7 @@ import { Library } from './pages/Library/Library'
 import { Exponents } from './pages/Exponents/Exponents'
 import { Automations } from './pages/Automations/Automations'
 import { Challenges } from './pages/Challenges/Challenges'
+import { Shop } from './pages/Shop/Shop'
 import { SettingsPage } from './pages/Settings/Settings'
 import { Help } from './pages/Help/Help'
 import { useStore } from './store/useStore'
@@ -43,6 +44,7 @@ export default function App() {
                 <Route path="/exponents" element={<Exponents />} />
                 <Route path="/automations" element={<Automations />} />
                 <Route path="/challenges" element={<Challenges />} />
+                <Route path="/shop" element={<Shop />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/help" element={<Help />} />
               </Routes>

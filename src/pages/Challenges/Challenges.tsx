@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { useStore } from '../../store/useStore'
 import { parseTier } from '../../lib/bignum'
 import {
-  challengesForDay,
   challengesForIndex,
   dayIndexOf,
   progressFor,
@@ -24,6 +23,9 @@ export function Challenges() {
   const maxTierLevel = useStore((s) => s.maxTierLevel)
   const claimChallenge = useStore((s) => s.claimChallenge)
   const automationSpeedBonus = useStore((s) => s.automationSpeedBonus)
+  const jewels = useStore((s) => s.jewels)
+  const challengeOffset = useStore((s) => s.challengeOffset)
+  const resetChallenges = useStore((s) => s.resetChallenges)
 
   const [won, setWon] = useState<Partial<Record<Difficulty, Reward>>>({})
 
@@ -48,14 +50,18 @@ export function Challenges() {
     }
   }, [numbers, maxTierLevel, challenges])
 
-  const dayIndex = dayIndexOf(challenges.day)
-  const todays = challengesForDay(challenges.day)
+  const dayIndex = dayIndexOf(challenges.day) + (challengeOffset || 0)
+  const todays = challengesForIndex(dayIndex)
   const tomorrow = challengesForIndex(dayIndex + 1)
   const cycleDay = (((dayIndex % CYCLE_LENGTH) + CYCLE_LENGTH) % CYCLE_LENGTH) + 1
 
   const claim = (d: Difficulty) => {
     const reward = claimChallenge(d)
     if (reward) setWon((w) => ({ ...w, [d]: reward }))
+  }
+
+  const reset = () => {
+    if (resetChallenges()) setWon({})
   }
 
   return (
@@ -67,14 +73,26 @@ export function Challenges() {
 
       <div className="challenges__stats">
         <div className="challenges__stat">
+          💎 Jewels
+          <strong>{jewels || 0}</strong>
+        </div>
+        <div className="challenges__stat">
           ⚡ Automation speed bonus
-          <strong>−{(automationSpeedBonus || 0).toFixed(3)}s</strong>
+          <strong>+{(automationSpeedBonus || 0).toFixed(3)}s</strong>
         </div>
         <div className="challenges__stat">
           🔼 Max tier level
           <strong>{maxTierLevel}</strong>
         </div>
       </div>
+
+      <button
+        className="btn btn--ghost challenges__reset"
+        onClick={reset}
+        disabled={(jewels || 0) < 35}
+      >
+        🔄 Reset challenges for 35 💎
+      </button>
 
       <div className="challenges__grid">
         {todays.map((c) => {

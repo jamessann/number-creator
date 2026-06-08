@@ -11,6 +11,17 @@
   gap: 16px;
 }
 
+.home__playtime {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.home__playtime strong {
+  color: var(--color-primary);
+}
+
 .home__workspace {
   display: grid;
   grid-template-columns: 1.6fr 1fr;

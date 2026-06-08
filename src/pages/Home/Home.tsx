@@ -15,11 +15,23 @@ import {
 } from '../../lib/bignum'
 import './Home.css'
 
+function formatDuration(secs: number): string {
+  const s = Math.floor(secs || 0)
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const sec = s % 60
+  if (h > 0) return `${h}h ${m}m`
+  if (m > 0) return `${m}m ${sec}s`
+  return `${sec}s`
+}
+
 export function Home() {
   const padRef = useRef<DrawingPadHandle>(null)
   const addNumber = useStore((s) => s.addNumber)
   const recordNumberCreated = useStore((s) => s.recordNumberCreated)
   const customTiers = useStore((s) => s.customTiers)
+  const todaySeconds = useStore((s) => s.challenges.playSeconds)
+  const totalSeconds = useStore((s) => s.totalPlaySeconds)
   const addTier = useStore((s) => s.addTier)
   const removeTier = useStore((s) => s.removeTier)
   const navigate = useNavigate()
@@ -101,6 +113,10 @@ export function Home() {
           <h1 className="page__title">Create your fictional number! 🔮</h1>
           <p className="page__subtitle">
             Draw a number that doesn't exist yet, then tell us all about it.
+          </p>
+          <p className="home__playtime">
+            ⏱️ Time in game today: <strong>{formatDuration(todaySeconds)}</strong> · all time:{' '}
+            <strong>{formatDuration(totalSeconds)}</strong>
           </p>
         </div>
         <HelpButton />

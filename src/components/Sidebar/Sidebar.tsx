@@ -7,6 +7,7 @@ const LINKS = [
   { to: '/exponents', label: 'Exponents', icon: '⚡' },
   { to: '/automations', label: 'Automations', icon: '🤖' },
   { to: '/challenges', label: 'Challenges', icon: '🏆' },
+  { to: '/shop', label: 'Shop', icon: '🛒' },
   { to: '/settings', label: 'Settings', icon: '⚙️' },
   { to: '/help', label: 'Help', icon: '❓' },
 ]

@@ -21,6 +21,14 @@
   color: var(--color-primary);
 }
 
+.challenges__reset {
+  margin-bottom: 20px;
+}
+
+.challenges__reset:disabled {
+  opacity: 0.5;
+}
+
 .challenges__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

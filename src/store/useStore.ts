@@ -3,7 +3,8 @@ import { persist } from 'zustand/middleware'
 import type { FictionalNumber, Exponent, CustomTier, Automation, ChallengeState, Theme } from '../types'
 import { registerCustomTiers, parseTier, makeTierValue, valueAtTier } from '../lib/bignum'
 import {
-  challengesForDay,
+  challengesForIndex,
+  dayIndexOf,
   progressFor,
   rollReward,
   type Difficulty,
@@ -18,10 +19,16 @@ interface State {
   customTiers: CustomTier[]
   automations: Automation[]
   challenges: ChallengeState
-  /** Seconds shaved off every automation's interval (from challenge rewards). Stacks. */
+  /** Seconds shaved off every automation's interval (rewards + shop). Stacks. */
   automationSpeedBonus: number
   /** Highest tier level the player has unlocked (1 = normal tiers). */
   maxTierLevel: number
+  /** Premium currency earned from challenges. */
+  jewels: number
+  /** Total seconds spent in the app across all time. */
+  totalPlaySeconds: number
+  /** How many times today's challenges have been reset (shifts the rotation). */
+  challengeOffset: number
   theme: Theme
   unlimitedStrength: boolean
 
@@ -39,6 +46,9 @@ interface State {
   recordNumberCreated: (detailed: boolean) => void
   recordExponentApplied: () => void
   claimChallenge: (d: Difficulty) => Reward | null
+  resetChallenges: () => boolean
+  buyTierLevel: () => boolean
+  buyAutoSpeed: () => boolean
   setTheme: (theme: Theme) => void
   setUnlimitedStrength: (on: boolean) => void
 }
@@ -119,6 +129,9 @@ export const useStore = create<State>()(
       challenges: freshChallenges(dayKey()),
       automationSpeedBonus: 0,
       maxTierLevel: 1,
+      jewels: 0,
+      totalPlaySeconds: 0,
+      challengeOffset: 0,
       theme: window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
       unlimitedStrength: false,
 
@@ -204,7 +217,10 @@ export const useStore = create<State>()(
       tickChallenges: () => {
         set((s) => {
           const c = today(s.challenges)
-          return { challenges: { ...c, playSeconds: c.playSeconds + 1 } }
+          return {
+            challenges: { ...c, playSeconds: c.playSeconds + 1 },
+            totalPlaySeconds: (s.totalPlaySeconds || 0) + 1,
+          }
         })
       },
 
@@ -228,7 +244,7 @@ export const useStore = create<State>()(
 
       claimChallenge: (d) => {
         const s = get()
-        const def = challengesForDay(dayKey()).find((x) => x.id === d)
+        const def = challengesForIndex(dayIndexOf(dayKey()) + (s.challengeOffset || 0)).find((x) => x.id === d)
         if (!def) return null
         const progress = progressFor(def.metric, snapshotOf(s))
         if (progress < def.target || s.challenges.claimed[d]) return null
@@ -252,10 +268,58 @@ export const useStore = create<State>()(
             const newLevel = (state.maxTierLevel || 1) + 1
             next.maxTierLevel = newLevel
             next.numbers = [buildFreeNumber(makeTierValue(newLevel, randInt(9, 100))), ...state.numbers]
+          } else if (reward.kind === 'jewels') {
+            next.jewels = (state.jewels || 0) + reward.amount
           }
           return next
         })
         return reward
+      },
+
+      resetChallenges: () => {
+        const s = get()
+        if ((s.jewels || 0) < 35) return false
+        set((state) => {
+          const c = today(state.challenges)
+          return {
+            jewels: state.jewels - 35,
+            challengeOffset: (state.challengeOffset || 0) + 1,
+            challenges: {
+              ...c,
+              numbersCreated: 0,
+              detailedCount: 0,
+              exponentsApplied: 0,
+              automationsStarted: 0,
+              customTiersMade: 0,
+              claimed: { easy: false, medium: false, hard: false },
+            },
+          }
+        })
+        return true
+      },
+
+      buyTierLevel: () => {
+        const s = get()
+        if ((s.jewels || 0) < 20) return false
+        set((state) => {
+          const newLevel = (state.maxTierLevel || 1) + 1
+          return {
+            jewels: state.jewels - 20,
+            maxTierLevel: newLevel,
+            numbers: [buildFreeNumber(makeTierValue(newLevel, randInt(9, 100))), ...state.numbers],
+          }
+        })
+        return true
+      },
+
+      buyAutoSpeed: () => {
+        const s = get()
+        if ((s.jewels || 0) < 20) return false
+        set((state) => ({
+          jewels: state.jewels - 20,
+          automationSpeedBonus: (state.automationSpeedBonus || 0) + 0.02,
+        }))
+        return true
       },
 
       setTheme: (theme) => set({ theme }),
