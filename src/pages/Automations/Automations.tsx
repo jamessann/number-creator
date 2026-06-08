@@ -43,7 +43,7 @@ export function Automations() {
   const addAutomation = useStore((s) => s.addAutomation)
   const removeAutomation = useStore((s) => s.removeAutomation)
 
-  const [selectedNumberId, setSelectedNumberId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [autoName, setAutoName] = useState('+?')
   const [gain, setGain] = useState('2')
@@ -56,8 +56,11 @@ export function Automations() {
     return () => window.clearInterval(id)
   }, [])
 
-  const selectedNumber = numbers.find((n) => n.id === selectedNumberId) ?? null
+  const selectedNumbers = numbers.filter((n) => selectedIds.includes(n.id))
   const gainNum = Math.max(1, Math.round(Number(gain) || 1))
+
+  const toggleNumber = (id: string) =>
+    setSelectedIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]))
 
   const scrollIntoView = (e: React.FocusEvent<HTMLElement>) => {
     const el = e.target
@@ -65,16 +68,17 @@ export function Automations() {
   }
 
   const handleCreate = () => {
-    if (!selectedNumber || !autoName.trim()) return
+    if (!selectedNumbers.length || !autoName.trim()) return
     addAutomation({
       name: autoName.trim(),
       gainTiers: gainNum,
       intervalSecs,
-      numberId: selectedNumber.id,
+      numberIds: selectedNumbers.map((n) => n.id),
     })
     setAutoName('+?')
     setGain('2')
     setIntervalSecs(10)
+    setSelectedIds([])
     setDialogOpen(false)
   }
 
@@ -85,8 +89,8 @@ export function Automations() {
         Make a number grow all by itself — even while no one is watching!
       </p>
 
-      {/* Step 1: pick a number */}
-      <h2 className="automations__step">1. Pick a number to grow</h2>
+      {/* Step 1: pick numbers */}
+      <h2 className="automations__step">1. Pick numbers to grow (tap as many as you like!)</h2>
       {numbers.length === 0 ? (
         <p className="automations__hint">Make a number first on the Create page!</p>
       ) : (
@@ -95,8 +99,8 @@ export function Automations() {
             <NumberCard
               key={n.id}
               number={n}
-              selected={n.id === selectedNumberId}
-              onClick={() => setSelectedNumberId(n.id)}
+              selected={selectedIds.includes(n.id)}
+              onClick={() => toggleNumber(n.id)}
             />
           ))}
         </div>
@@ -116,9 +120,9 @@ export function Automations() {
           <Dialog.Content className="dialog__content">
             <Dialog.Title className="dialog__title">Make your automation 🤖</Dialog.Title>
             <Dialog.Description className="dialog__desc">
-              {selectedNumber
-                ? `It will grow "${selectedNumber.name}" on its own, forever.`
-                : 'Pick a number above first, then set it growing!'}
+              {selectedNumbers.length
+                ? `It will grow ${selectedNumbers.length} number${selectedNumbers.length > 1 ? 's' : ''} on their own, forever.`
+                : 'Pick one or more numbers above first, then set them growing!'}
             </Dialog.Description>
 
             <label className="dialog__field">
@@ -161,15 +165,22 @@ export function Automations() {
             </label>
 
             <p className="dialog__example">
-              Adds <strong>+{gainNum} tiers</strong> every <strong>{intervalLabel(intervalSecs)}</strong>
-              {selectedNumber ? ` to ${selectedNumber.name}.` : '.'}
+              Adds <strong>+{gainNum} tiers</strong> every{' '}
+              <strong>{intervalLabel(intervalSecs)}</strong>
+              {selectedNumbers.length
+                ? ` to ${selectedNumbers.map((n) => n.name).join(', ')}.`
+                : '.'}
             </p>
 
             <div className="dialog__actions">
               <Dialog.Close asChild>
                 <button className="btn btn--ghost">Cancel</button>
               </Dialog.Close>
-              <button className="btn btn--primary" onClick={handleCreate} disabled={!selectedNumber}>
+              <button
+                className="btn btn--primary"
+                onClick={handleCreate}
+                disabled={!selectedNumbers.length}
+              >
                 Start it!
               </button>
             </div>
@@ -183,7 +194,10 @@ export function Automations() {
           <h2 className="automations__step">Running automations ⏱️</h2>
           <div className="automations__list">
             {automations.map((a) => {
-              const number = numbers.find((n) => n.id === a.numberId)
+              const ids = a.numberIds ?? (a.numberId ? [a.numberId] : [])
+              const targets = ids
+                .map((id) => numbers.find((n) => n.id === id))
+                .filter((n): n is NonNullable<typeof n> => Boolean(n))
               const nextIn = a.intervalSecs * 1000 - ((now - a.lastTick) % (a.intervalSecs * 1000))
               return (
                 <div key={a.id} className="automation-card">
@@ -200,17 +214,21 @@ export function Automations() {
                   <p className="automation-card__rule">
                     +{a.gainTiers} tiers every {intervalLabel(a.intervalSecs)}
                   </p>
-                  {number ? (
-                    <>
-                      <p className="automation-card__target">
-                        <strong>{number.name}</strong> is now{' '}
-                        <span className="automation-card__value">{formatValue(number.value)}</span>
-                      </p>
-                      <p className="automation-card__next">⏳ next gain in {formatCountdown(nextIn)}</p>
-                    </>
+                  {targets.length ? (
+                    <ul className="automation-card__targets">
+                      {targets.map((number) => (
+                        <li key={number.id} className="automation-card__target">
+                          <strong>{number.name}</strong> is now{' '}
+                          <span className="automation-card__value">
+                            {formatValue(number.value)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   ) : (
-                    <p className="automation-card__target">(its number was deleted)</p>
+                    <p className="automation-card__target">(its numbers were deleted)</p>
                   )}
+                  <p className="automation-card__next">⏳ next gain in {formatCountdown(nextIn)}</p>
                 </div>
               )
             })}

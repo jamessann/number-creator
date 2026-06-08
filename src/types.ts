@@ -28,8 +28,10 @@ export interface Automation {
   gainTiers: number
   /** Seconds between activations (0.5 → 86400). */
   intervalSecs: number
-  /** The fictional number this automation grows. */
-  numberId: string
+  /** The fictional numbers this automation grows. */
+  numberIds: string[]
+  /** Legacy: older automations grew a single number. */
+  numberId?: string
   /** Timestamp of the last applied activation (ms). */
   lastTick: number
   createdAt: number

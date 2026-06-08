@@ -18,7 +18,7 @@ interface State {
   removeExponent: (id: string) => void
   addTier: (t: { name: string; short: string; desc: string; rank: number }) => CustomTier
   removeTier: (token: string) => void
-  addAutomation: (a: { name: string; gainTiers: number; intervalSecs: number; numberId: string }) => Automation
+  addAutomation: (a: { name: string; gainTiers: number; intervalSecs: number; numberIds: string[] }) => Automation
   removeAutomation: (id: string) => void
   /** Apply any due automation gains up to `now` (called on load + on a timer). */
   runAutomations: (now: number) => void
@@ -101,14 +101,17 @@ export const useStore = create<State>()(
         let changed = false
 
         const automations = s.automations.map((a) => {
-          const idx = numbers.findIndex((n) => n.id === a.numberId)
-          if (idx === -1) return a
           const intervalMs = a.intervalSecs * 1000
           const steps = Math.floor((now - a.lastTick) / intervalMs)
           if (steps <= 0) return a
+          const ids = a.numberIds ?? (a.numberId ? [a.numberId] : [])
+          ids.forEach((id) => {
+            const idx = numbers.findIndex((n) => n.id === id)
+            if (idx === -1) return
+            const newTier = tierOfValue(numbers[idx].value) + a.gainTiers * steps
+            numbers[idx] = { ...numbers[idx], value: valueAtTier(newTier) }
+          })
           changed = true
-          const newTier = tierOfValue(numbers[idx].value) + a.gainTiers * steps
-          numbers[idx] = { ...numbers[idx], value: valueAtTier(newTier) }
           return { ...a, lastTick: a.lastTick + steps * intervalMs }
         })
 
