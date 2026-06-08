@@ -22,32 +22,34 @@ export interface ChallengeDef {
 type Variant = { goal: string; target: number; metric: Metric }
 
 // Each difficulty rotates through this list of UNIQUE challenges — a different
-// one each day, repeating once the whole cycle is used up.
+// one each refresh, repeating once the whole cycle is used up.
+// These all take real effort (time, lots of detailed numbers, or tier levels)
+// so none can be finished instantly.
 const EASY_POOL: Variant[] = [
   { goal: 'Stay in the game for 2 minutes', target: 120, metric: 'play' },
-  { goal: 'Create 3 numbers', target: 3, metric: 'create' },
-  { goal: 'Use an exponent 1 time', target: 1, metric: 'exponent' },
-  { goal: 'Start 1 automation', target: 1, metric: 'automation' },
-  { goal: 'Stay in the game for 1 minute', target: 60, metric: 'play' },
-  { goal: 'Create 5 numbers', target: 5, metric: 'create' },
+  { goal: 'Stay in the game for 3 minutes', target: 180, metric: 'play' },
+  { goal: 'Create 2 detailed numbers (good drawing + description)', target: 2, metric: 'detailed' },
+  { goal: 'Use exponents 3 times', target: 3, metric: 'exponent' },
+  { goal: 'Start 2 automations', target: 2, metric: 'automation' },
+  { goal: 'Create 3 detailed numbers', target: 3, metric: 'detailed' },
 ]
 
 const MEDIUM_POOL: Variant[] = [
   { goal: 'Stay in the game for 15 minutes', target: 900, metric: 'play' },
-  { goal: 'Create 10 numbers', target: 10, metric: 'create' },
-  { goal: 'Make 3 of your own infinities', target: 3, metric: 'customtier' },
-  { goal: 'Use exponents 5 times', target: 5, metric: 'exponent' },
-  { goal: 'Create 5 detailed numbers', target: 5, metric: 'detailed' },
-  { goal: 'Get any number to tier 50', target: 50, metric: 'maxtier' },
+  { goal: 'Stay in the game for 10 minutes', target: 600, metric: 'play' },
+  { goal: 'Create 6 detailed numbers (good drawing + description)', target: 6, metric: 'detailed' },
+  { goal: 'Use exponents 8 times', target: 8, metric: 'exponent' },
+  { goal: 'Create 8 detailed numbers', target: 8, metric: 'detailed' },
+  { goal: 'Stay in the game for 20 minutes', target: 1200, metric: 'play' },
 ]
 
 const HARD_POOL: Variant[] = [
   { goal: 'Create 20 detailed numbers (good drawing + description)', target: 20, metric: 'detailed' },
   { goal: 'Stay in the game for 30 minutes', target: 1800, metric: 'play' },
-  { goal: 'Reach a tier level (make a "tier tier" number!)', target: 2, metric: 'tierlevel' },
-  { goal: 'Get any number to tier 1000', target: 1000, metric: 'maxtier' },
-  { goal: 'Start 5 automations', target: 5, metric: 'automation' },
-  { goal: 'Create 30 numbers', target: 30, metric: 'create' },
+  { goal: 'Reach tier level 2 — make a "tier tier" number!', target: 2, metric: 'tierlevel' },
+  { goal: 'Use exponents 15 times', target: 15, metric: 'exponent' },
+  { goal: 'Create 15 detailed numbers', target: 15, metric: 'detailed' },
+  { goal: 'Stay in the game for 25 minutes', target: 1500, metric: 'play' },
 ]
 
 /** How many periods the whole rotation lasts before it repeats. */

@@ -95,8 +95,8 @@ export function Home() {
       svgPath: result.svgPath,
       viewBox: result.viewBox,
     })
-    // Count toward daily challenges (detailed = good drawing + a description).
-    const detailed = result.svgPath.length > 300 && englishContext.trim().length >= 10
+    // Count toward daily challenges (detailed = a real drawing + a real description).
+    const detailed = result.svgPath.length > 450 && englishContext.trim().length >= 12
     recordNumberCreated(detailed)
     setError('')
     setToastOpen(true)
