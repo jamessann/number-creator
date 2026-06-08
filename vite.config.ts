@@ -17,7 +17,7 @@ export default defineConfig({
         theme_color: '#6c5ce7',
         background_color: '#1a1a2e',
         display: 'standalone',
-        orientation: 'landscape',
+        orientation: 'any',
         start_url: '/number-creator/',
         scope: '/number-creator/',
         icons: [

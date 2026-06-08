@@ -72,3 +72,56 @@
   width: 28px;
   text-align: center;
 }
+
+/* Phones: turn the side menu into a scrollable bottom tab bar. */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    border-right: none;
+    border-top: 2px solid var(--color-border);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    gap: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar__brand {
+    display: none;
+  }
+
+  .sidebar__list {
+    flex-direction: row;
+    gap: 2px;
+    width: 100%;
+  }
+
+  .sidebar__list li {
+    flex: 1 1 0;
+    min-width: 46px;
+  }
+
+  .sidebar__link {
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 4px;
+    min-height: 52px;
+    border-radius: 12px;
+    justify-content: center;
+  }
+
+  .sidebar__label {
+    display: none;
+  }
+
+  .sidebar__icon {
+    font-size: 1.6rem;
+    width: auto;
+  }
+}

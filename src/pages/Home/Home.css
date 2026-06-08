@@ -181,9 +181,32 @@
   padding: 8px 16px;
 }
 
-/* Portrait / narrow fallback */
+/* Portrait / narrow fallback: stack and let the page scroll instead of
+   distributing a fixed height (which collapsed the drawing pad). */
 @media (max-width: 900px) {
+  .home {
+    height: auto;
+  }
+
   .home__workspace {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    min-height: 0;
+    gap: 18px;
+  }
+
+  .home__draw {
+    min-height: 300px;
+  }
+
+  .home__details {
+    overflow-y: visible;
+    padding-bottom: 24px;
+    scroll-padding-bottom: 0;
+  }
+
+  .home__save {
+    margin-top: 8px;
   }
 }

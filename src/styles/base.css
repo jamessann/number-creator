@@ -41,6 +41,24 @@ button {
   padding: 32px 40px;
 }
 
+/* Phones: full-width content above the fixed bottom tab bar. */
+@media (max-width: 768px) {
+  .app__content {
+    padding: 16px 14px calc(86px + env(safe-area-inset-bottom));
+  }
+
+  .page__title {
+    font-size: 1.6rem;
+  }
+
+  .toast__viewport {
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    right: 12px;
+    width: auto;
+    left: 12px;
+  }
+}
+
 /* Shared page primitives */
 .page__title {
   font-size: 2rem;
