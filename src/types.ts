@@ -52,8 +52,16 @@ export interface ChallengeState {
   day: string
   /** Seconds spent in the app today. */
   playSeconds: number
+  /** Numbers created today. */
+  numbersCreated: number
   /** Detailed numbers created today. */
   detailedCount: number
+  /** Exponents applied today. */
+  exponentsApplied: number
+  /** Automations started today. */
+  automationsStarted: number
+  /** Custom infinities made today. */
+  customTiersMade: number
   claimed: { easy: boolean; medium: boolean; hard: boolean }
 }
 

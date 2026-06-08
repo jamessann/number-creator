@@ -2,7 +2,14 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { FictionalNumber, Exponent, CustomTier, Automation, ChallengeState, Theme } from '../types'
 import { registerCustomTiers, parseTier, makeTierValue, valueAtTier } from '../lib/bignum'
-import { CHALLENGES, rollReward, type Difficulty, type Reward } from '../lib/challenges'
+import {
+  challengesForDay,
+  progressFor,
+  rollReward,
+  type Difficulty,
+  type Reward,
+  type ProgressSnapshot,
+} from '../lib/challenges'
 import { generateGlyph, generateDefinition } from '../lib/generator'
 
 interface State {
@@ -29,7 +36,8 @@ interface State {
   removeAutomation: (id: string) => void
   runAutomations: (now: number) => void
   tickChallenges: () => void
-  recordDetailedNumber: () => void
+  recordNumberCreated: (detailed: boolean) => void
+  recordExponentApplied: () => void
   claimChallenge: (d: Difficulty) => Reward | null
   setTheme: (theme: Theme) => void
   setUnlimitedStrength: (on: boolean) => void
@@ -44,11 +52,47 @@ function dayKey(): string {
 }
 
 function freshChallenges(day: string): ChallengeState {
-  return { day, playSeconds: 0, detailedCount: 0, claimed: { easy: false, medium: false, hard: false } }
+  return {
+    day,
+    playSeconds: 0,
+    numbersCreated: 0,
+    detailedCount: 0,
+    exponentsApplied: 0,
+    automationsStarted: 0,
+    customTiersMade: 0,
+    claimed: { easy: false, medium: false, hard: false },
+  }
+}
+
+/** Return today's challenge state, resetting it if the day has rolled over. */
+function today(c: ChallengeState): ChallengeState {
+  return c.day === dayKey() ? c : freshChallenges(dayKey())
 }
 
 function randInt(min: number, max: number): number {
   return Math.floor(min + Math.random() * (max - min + 1))
+}
+
+function snapshotOf(s: State): ProgressSnapshot {
+  const c = today(s.challenges)
+  let maxTier = 0
+  let maxLevel = s.maxTierLevel || 1
+  for (const n of s.numbers) {
+    const { level, tier } = parseTier(n.value)
+    if (level > maxLevel) maxLevel = level
+    const eff = level > 1 ? Number.MAX_SAFE_INTEGER : tier
+    if (eff > maxTier) maxTier = eff
+  }
+  return {
+    playSeconds: c.playSeconds ?? 0,
+    numbersCreated: c.numbersCreated ?? 0,
+    detailedCount: c.detailedCount ?? 0,
+    exponentsApplied: c.exponentsApplied ?? 0,
+    automationsStarted: c.automationsStarted ?? 0,
+    customTiersMade: c.customTiersMade ?? 0,
+    maxTier,
+    maxTierLevel: maxLevel,
+  }
 }
 
 function buildFreeNumber(value: string): FictionalNumber {
@@ -106,7 +150,8 @@ export const useStore = create<State>()(
         set((s) => {
           const customTiers = [...s.customTiers, created]
           registerCustomTiers(customTiers)
-          return { customTiers }
+          const c = today(s.challenges)
+          return { customTiers, challenges: { ...c, customTiersMade: c.customTiersMade + 1 } }
         })
         return created
       },
@@ -119,7 +164,13 @@ export const useStore = create<State>()(
 
       addAutomation: (a) => {
         const created: Automation = { ...a, id: uid(), lastTick: Date.now(), createdAt: Date.now() }
-        set((s) => ({ automations: [created, ...s.automations] }))
+        set((s) => {
+          const c = today(s.challenges)
+          return {
+            automations: [created, ...s.automations],
+            challenges: { ...c, automationsStarted: c.automationsStarted + 1 },
+          }
+        })
         return created
       },
       removeAutomation: (id) =>
@@ -151,26 +202,35 @@ export const useStore = create<State>()(
       },
 
       tickChallenges: () => {
-        const today = dayKey()
-        set((s) =>
-          s.challenges.day !== today
-            ? { challenges: freshChallenges(today) }
-            : { challenges: { ...s.challenges, playSeconds: s.challenges.playSeconds + 1 } }
-        )
+        set((s) => {
+          const c = today(s.challenges)
+          return { challenges: { ...c, playSeconds: c.playSeconds + 1 } }
+        })
       },
 
-      recordDetailedNumber: () =>
+      recordNumberCreated: (detailed) =>
         set((s) => {
-          const today = dayKey()
-          const c = s.challenges.day === today ? s.challenges : freshChallenges(today)
-          return { challenges: { ...c, detailedCount: c.detailedCount + 1 } }
+          const c = today(s.challenges)
+          return {
+            challenges: {
+              ...c,
+              numbersCreated: c.numbersCreated + 1,
+              detailedCount: detailed ? c.detailedCount + 1 : c.detailedCount,
+            },
+          }
+        }),
+
+      recordExponentApplied: () =>
+        set((s) => {
+          const c = today(s.challenges)
+          return { challenges: { ...c, exponentsApplied: c.exponentsApplied + 1 } }
         }),
 
       claimChallenge: (d) => {
         const s = get()
-        const def = CHALLENGES.find((x) => x.id === d)
+        const def = challengesForDay(dayKey()).find((x) => x.id === d)
         if (!def) return null
-        const progress = def.metric === 'play' ? s.challenges.playSeconds : s.challenges.detailedCount
+        const progress = progressFor(def.metric, snapshotOf(s))
         if (progress < def.target || s.challenges.claimed[d]) return null
 
         const reward = rollReward(d)

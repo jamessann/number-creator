@@ -22,6 +22,7 @@ export function Exponents() {
   const addExponent = useStore((s) => s.addExponent)
   const removeExponent = useStore((s) => s.removeExponent)
   const setNumberValue = useStore((s) => s.setNumberValue)
+  const recordExponentApplied = useStore((s) => s.recordExponentApplied)
 
   const [params] = useSearchParams()
   const initialNumber = params.get('n')
@@ -212,6 +213,7 @@ export function Exponents() {
                   className="btn exponents__apply"
                   onClick={() => {
                     setNumberValue(selectedNumber.id, result.value)
+                    recordExponentApplied()
                     setApplied(true)
                   }}
                 >

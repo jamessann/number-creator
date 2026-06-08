@@ -1,21 +1,57 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useStore } from '../../store/useStore'
-import { CHALLENGES, type Difficulty, type Reward } from '../../lib/challenges'
+import { parseTier } from '../../lib/bignum'
+import {
+  challengesForDay,
+  challengesForIndex,
+  dayIndexOf,
+  progressFor,
+  CYCLE_LENGTH,
+  type Difficulty,
+  type Reward,
+  type ProgressSnapshot,
+} from '../../lib/challenges'
 import './Challenges.css'
 
 function formatTime(secs: number): string {
   const s = Math.floor(secs)
-  const m = Math.floor(s / 60)
-  return `${m}:${String(s % 60).padStart(2, '0')}`
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
 export function Challenges() {
   const challenges = useStore((s) => s.challenges)
+  const numbers = useStore((s) => s.numbers)
+  const maxTierLevel = useStore((s) => s.maxTierLevel)
   const claimChallenge = useStore((s) => s.claimChallenge)
   const automationSpeedBonus = useStore((s) => s.automationSpeedBonus)
-  const maxTierLevel = useStore((s) => s.maxTierLevel)
 
   const [won, setWon] = useState<Partial<Record<Difficulty, Reward>>>({})
+
+  const snapshot: ProgressSnapshot = useMemo(() => {
+    let maxTier = 0
+    let maxLevel = maxTierLevel || 1
+    for (const n of numbers) {
+      const { level, tier } = parseTier(n.value)
+      if (level > maxLevel) maxLevel = level
+      const eff = level > 1 ? Number.MAX_SAFE_INTEGER : tier
+      if (eff > maxTier) maxTier = eff
+    }
+    return {
+      playSeconds: challenges.playSeconds ?? 0,
+      numbersCreated: challenges.numbersCreated ?? 0,
+      detailedCount: challenges.detailedCount ?? 0,
+      exponentsApplied: challenges.exponentsApplied ?? 0,
+      automationsStarted: challenges.automationsStarted ?? 0,
+      customTiersMade: challenges.customTiersMade ?? 0,
+      maxTier,
+      maxTierLevel: maxLevel,
+    }
+  }, [numbers, maxTierLevel, challenges])
+
+  const dayIndex = dayIndexOf(challenges.day)
+  const todays = challengesForDay(challenges.day)
+  const tomorrow = challengesForIndex(dayIndex + 1)
+  const cycleDay = (((dayIndex % CYCLE_LENGTH) + CYCLE_LENGTH) % CYCLE_LENGTH) + 1
 
   const claim = (d: Difficulty) => {
     const reward = claimChallenge(d)
@@ -26,7 +62,7 @@ export function Challenges() {
     <div className="challenges">
       <h1 className="page__title">Daily Challenges 🏆</h1>
       <p className="page__subtitle">
-        Three new challenges every day. The harder the challenge, the better the reward!
+        New challenges every day! Day {cycleDay} of {CYCLE_LENGTH} — then the cycle repeats.
       </p>
 
       <div className="challenges__stats">
@@ -41,15 +77,15 @@ export function Challenges() {
       </div>
 
       <div className="challenges__grid">
-        {CHALLENGES.map((c) => {
-          const progress = c.metric === 'play' ? challenges.playSeconds : challenges.detailedCount
+        {todays.map((c) => {
+          const progress = progressFor(c.metric, snapshot)
           const pct = Math.min(100, Math.round((progress / c.target) * 100))
           const done = progress >= c.target
           const claimed = challenges.claimed[c.id]
           const progressText =
             c.metric === 'play'
               ? `${formatTime(progress)} / ${formatTime(c.target)}`
-              : `${Math.min(progress, c.target)} / ${c.target} detailed numbers`
+              : `${Math.min(progress, c.target)} / ${c.target}`
 
           return (
             <div key={c.id} className={`challenge-card challenge-card--${c.id}`}>
@@ -81,10 +117,20 @@ export function Challenges() {
         })}
       </div>
 
-      <p className="challenges__note">
-        🔴 A number counts as "detailed" when it has a good drawing <em>and</em> a description.
-        Challenges reset every day.
-      </p>
+      <div className="challenges__tomorrow">
+        <h2 className="challenges__tomorrow-title">🔮 Tomorrow's challenges</h2>
+        <ul className="challenges__tomorrow-list">
+          {tomorrow.map((c) => (
+            <li key={c.id}>
+              {c.emoji} <strong>{c.title}:</strong> {c.goal}
+            </li>
+          ))}
+        </ul>
+        <p className="challenges__note">
+          See? Different every day — they only repeat after {CYCLE_LENGTH} days. Challenges and
+          progress reset each day.
+        </p>
+      </div>
     </div>
   )
 }

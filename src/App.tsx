@@ -25,7 +25,7 @@ export default function App() {
       useStore.getState().runAutomations(Date.now())
       useStore.getState().tickChallenges()
     }
-    useStore.getState().runAutomations(Date.now())
+    tick()
     const id = window.setInterval(tick, 1000)
     return () => window.clearInterval(id)
   }, [])

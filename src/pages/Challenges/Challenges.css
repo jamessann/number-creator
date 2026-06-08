@@ -116,9 +116,36 @@
   padding: 8px 12px;
 }
 
+.challenges__tomorrow {
+  margin-top: 32px;
+  background: var(--color-surface-2);
+  border-radius: 20px;
+  padding: 20px 24px;
+  max-width: 720px;
+}
+
+.challenges__tomorrow-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+
+.challenges__tomorrow-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.challenges__tomorrow-list li {
+  font-size: 1.02rem;
+  line-height: 1.4;
+}
+
 .challenges__note {
-  margin-top: 28px;
+  margin: 16px 0 0;
   color: var(--color-text-muted);
-  max-width: 640px;
   line-height: 1.5;
 }
